@@ -1,0 +1,25 @@
+services:
+  db:
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-agro}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-agro123}
+      POSTGRES_DB: ${POSTGRES_DB:-agropredict}
+
+  api:
+    container_name: agro-predict-api-prod
+    env_file:
+      - .env.prod
+    environment:
+      - DATABASE_URL=postgresql+psycopg2://${POSTGRES_USER:-agro}:${POSTGRES_PASSWORD:-agro123}@db:5432/${POSTGRES_DB:-agropredict}
+    ports:
+      - "8000:8000"
+    restart: always
+    networks:
+      - internal
+
+networks:
+  internal:
+    driver: bridge
+
+volumes:
+  postgres_data:

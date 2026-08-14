@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+.venv/
+venv/
+env/
+ENV/
+
+# Tests
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+
+# IDEs
+.idea/
+.vscode/
+*.swp
+
+# Env / secrets (nunca commitear)
+.env
+.env.dev
+.env.prod
+
+# Datos de ejemplo
+data/*.csv
+data/*.csv.gz
+
+# Artefactos del modelo (se regeneran con el entrenamiento)
+app/ml/artifacts/*.joblib

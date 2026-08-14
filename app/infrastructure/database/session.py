@@ -22,7 +22,7 @@ if not settings.DATABASE_URL.startswith("sqlite"):
     @event.listens_for(engine, "connect")
     def set_search_path(dbapi_conn, connection_record):
         cursor = dbapi_conn.cursor()
-        cursor.execute("SET search_path TO auth, core, security, public")
+        cursor.execute("SET search_path TO security, core, public")
         cursor.close()
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine, future=True)

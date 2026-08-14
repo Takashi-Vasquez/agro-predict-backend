@@ -11,7 +11,7 @@ class Profile(BitacoraMixin, Base):
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
     user_id: Mapped[int] = mapped_column(
         Integer,
-        ForeignKey("auth.users.id", ondelete="CASCADE"),
+        ForeignKey("security.users.id", ondelete="CASCADE"),
         unique=True,
         nullable=False,
         index=True,

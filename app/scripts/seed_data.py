@@ -8,7 +8,7 @@ Para agregar nuevos menus o permisos, editar las listas PERMISOS y MENUS_DATA.
 """
 
 from app.infrastructure.config.security import hash_password
-from app.infrastructure.orm.auth.user import User
+from app.infrastructure.orm.security.user import User
 from sqlalchemy import select
 
 from app.infrastructure.database.session import SessionLocal
@@ -34,71 +34,50 @@ MENUS_DATA = [
         "menu_permissions": ["READ"],
     },
     {
-        "name": "Cultivos",
-        "route": "/cultivos",
-        "icon": "agriculture",
+        "name": "Modelo Predictivo",
+        "route": "/modelo-predictivo",
+        "icon": "analytics",
         "order_index": 2,
         "menu_permissions": [],
         "submenus": [
             {
-                "name": "Gestionar Cultivos",
-                "route": "/cultivos/gestion",
+                "name": "entrenamiento",
+                "route": "/modelo-predictivo/entrenamiento",
                 "order_index": 1,
                 "menu_permissions": ["CREATE", "READ", "UPDATE", "DELETE"],
             },
-            {
-                "name": "Reporte Cultivos",
-                "route": "/cultivos/reporte",
-                "order_index": 2,
-                "menu_permissions": ["READ", "EXPORT"],
-            },
-        ],
-    },
-    {
-        "name": "Predicciones",
-        "route": "/predicciones",
-        "icon": "analytics",
-        "order_index": 3,
-        "menu_permissions": [],
-        "submenus": [
             {
                 "name": "Gestionar Predicciones",
-                "route": "/predicciones/gestion",
-                "order_index": 1,
-                "menu_permissions": ["CREATE", "READ", "UPDATE", "DELETE"],
-            },
-            {
-                "name": "Reporte Predicciones",
-                "route": "/predicciones/reporte",
+                "route": "/modelo-predictivo/gestion",
                 "order_index": 2,
-                "menu_permissions": ["READ", "EXPORT"],
+                "menu_permissions": ["CREATE", "READ", "UPDATE", "DELETE"],
             },
         ],
     },
     {
-        "name": "Administracion",
-        "route": "/admin",
-        "icon": "settings",
-        "order_index": 4,
+        "name": "Seguridad",
+        "route": "/seguridad",
+        "icon": "security",
+        "order_index": 99,
         "menu_permissions": [],
         "submenus": [
             {
-                "name": "Usuarios",
-                "route": "/admin/usuarios",
+                "name": "Roles",
+                "route": "/seguridad/roles",
                 "order_index": 1,
                 "menu_permissions": ["CREATE", "READ", "UPDATE", "DELETE"],
             },
             {
-                "name": "Roles",
-                "route": "/admin/roles",
+                "name": "Perfil Accesos",
+                "route": "/seguridad/perfil-acceso",
                 "order_index": 2,
                 "menu_permissions": ["CREATE", "READ", "UPDATE", "DELETE"],
             },
-            {
-                "name": "Permisos",
-                "route": "/admin/permisos",
+                        {
+                "name": "Usuarios",
+                "route": "/seguridad/usuarios",
                 "order_index": 3,
-                "menu_permissions": ["READ"],
+                "menu_permissions": ["CREATE", "READ", "UPDATE", "DELETE"],
             },
         ],
     },

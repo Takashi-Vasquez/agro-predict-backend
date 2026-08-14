@@ -1,4 +1,6 @@
-.PHONY: dev prod down seed admin train generate-data shell run logs migrate migrate-new migrate-down migrate-history migrate-current
+include .env
+
+.PHONY: dev prod down seed admin train generate-data shell run logs migrate migrate-new migrate-down migrate-history migrate-current bd-export bd-import drop-all
 
 # Dev
 dev:
@@ -48,6 +50,16 @@ migrate-history:
 
 migrate-current:
 	docker compose -f docker-compose.yml -f docker-compose.dev.yml exec api alembic current
+
+# Exportar / Importar BD
+bd-export:
+	docker compose -f docker-compose.yml -f docker-compose.dev.yml exec -T db sh -c "pg_dump -U $(POSTGRES_USER) -d $(POSTGRES_DB) --no-owner --no-privileges --clean --if-exists" > backup.sql
+
+bd-import:
+	psql "$(SUPABASE_URL)" < backup.sql
+
+drop-all:
+	psql "$(SUPABASE_URL)" -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public;"
 
 # Shell interactivo
 shell:

@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.presentation.api.deps import CurrentUser, DbDep
-from app.infrastructure.orm.auth.user import User
+from app.infrastructure.orm.security.user import User
 from app.infrastructure.repositories.user_repository import UserRepositoryImpl
 from app.infrastructure.repositories.profile_repository import ProfileRepositoryImpl
 from app.infrastructure.repositories.role_repository import RoleRepositoryImpl

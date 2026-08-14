@@ -1,6 +1,6 @@
 from app.infrastructure.database.base import Base, Schemas
 
-from app.infrastructure.orm.auth.user import User
+from app.infrastructure.orm.security.user import User
 from app.infrastructure.orm.core.crop import Crop
 from app.infrastructure.orm.core.prediction import Prediction
 from app.infrastructure.orm.security.profile import Profile

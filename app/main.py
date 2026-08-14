@@ -14,7 +14,6 @@ from app.presentation.api.v1.router import router
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     with engine.connect() as conn:
-        conn.execute(text("CREATE SCHEMA IF NOT EXISTS auth"))
         conn.execute(text("CREATE SCHEMA IF NOT EXISTS core"))
         conn.execute(text("CREATE SCHEMA IF NOT EXISTS security"))
         conn.commit()

@@ -4,6 +4,7 @@ services:
       POSTGRES_USER: agro
       POSTGRES_PASSWORD: agro123
       POSTGRES_DB: agropredict
+      SUPABASE_URL: postgresql://postgres.eqhzwaylqbusidlcpkvs:AgroPrdict-lvbo87Pz4l1qui4w@aws-0-us-east-1.pooler.supabase.com:5432/postgres
     ports:
       - "5432:5432"
 

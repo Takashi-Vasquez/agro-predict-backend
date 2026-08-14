@@ -9,7 +9,7 @@ class Prediction(BitacoraMixin, Base):
     __table_args__ = {"schema": Schemas.CORE}
 
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
-    user_id: Mapped[int] = mapped_column(ForeignKey("auth.users.id"), index=True, nullable=False)
+    user_id: Mapped[int] = mapped_column(ForeignKey("security.users.id"), index=True, nullable=False)
     crop_id: Mapped[int | None] = mapped_column(ForeignKey("core.crops.id"), nullable=True)
     predicted_crop: Mapped[str] = mapped_column(String(255), nullable=False)
     probability: Mapped[float] = mapped_column(Float, default=0.0, nullable=False)

@@ -6,7 +6,7 @@ from app.infrastructure.database.base import Base, BitacoraMixin, Schemas
 
 class User(BitacoraMixin, Base):
     __tablename__ = "users"
-    __table_args__ = {"schema": Schemas.AUTH}
+    __table_args__ = {"schema": Schemas.SECURITY}
 
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
     email: Mapped[str] = mapped_column(String(255), unique=True, index=True, nullable=False)

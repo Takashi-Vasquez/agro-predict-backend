@@ -9,7 +9,6 @@ class Base(DeclarativeBase):
 
 
 class Schemas:
-    AUTH = "auth"
     CORE = "core"
     SECURITY = "security"
 

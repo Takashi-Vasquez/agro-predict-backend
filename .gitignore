@@ -30,3 +30,6 @@ data/*.csv.gz
 
 # Artefactos del modelo (se regeneran con el entrenamiento)
 app/ml/artifacts/*.joblib
+
+# Otros
+backup.sql

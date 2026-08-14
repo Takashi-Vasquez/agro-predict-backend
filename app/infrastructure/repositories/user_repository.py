@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 
 from app.domain.entities import User
 from app.domain.repositories import UserRepository
-from app.infrastructure.orm.auth.user import User as UserModel
+from app.infrastructure.orm.security.user import User as UserModel
 
 
 class UserRepositoryImpl(UserRepository):

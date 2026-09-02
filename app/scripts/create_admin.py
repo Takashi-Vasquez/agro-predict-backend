@@ -14,7 +14,7 @@ from sqlalchemy.exc import IntegrityError
 
 from app.infrastructure.config.settings import get_settings
 from app.infrastructure.config.security import hash_password
-from app.infrastructure.database.session import SessionLocal
+from app.infrastructure.database.session import _get_session_factory
 from app.infrastructure.repositories.user_repository import UserRepositoryImpl
 
 
@@ -38,7 +38,7 @@ def main() -> None:
         print("Error: las contrasenas no coinciden")
         sys.exit(1)
 
-    db = SessionLocal()
+    db = _get_session_factory()()
     try:
         repo = UserRepositoryImpl(db)
 

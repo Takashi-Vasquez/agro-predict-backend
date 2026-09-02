@@ -7,13 +7,14 @@ from sqlalchemy import text
 
 from app.infrastructure.config.settings import get_settings
 from app.infrastructure.orm.base import Base
-from app.infrastructure.database.session import engine
+from app.infrastructure.database.session import _get_engine
 from app.presentation.api.v1.router import router
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     settings = get_settings()
+    engine = _get_engine()
     with engine.connect() as conn:
         conn.execute(text("CREATE SCHEMA IF NOT EXISTS core"))
         conn.execute(text("CREATE SCHEMA IF NOT EXISTS security"))

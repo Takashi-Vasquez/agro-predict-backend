@@ -1,22 +1,11 @@
 services:
-  db:
-    environment:
-      POSTGRES_USER: agro
-      POSTGRES_PASSWORD: agro123
-      POSTGRES_DB: agropredict
-      SUPABASE_URL: postgresql://postgres.eqhzwaylqbusidlcpkvs:AgroPrdict-lvbo87Pz4l1qui4w@aws-0-us-east-1.pooler.supabase.com:5432/postgres
-    ports:
-      - "5433:5432"
-
   api:
     container_name: agro-predict-api-dev
     env_file:
       - .env.dev
     environment:
-      - DATABASE_URL=postgresql+psycopg2://agro:agro123@db:5432/agropredict
+      - DEBUG=true
+      - ACCESS_TOKEN_EXPIRE_MINUTES=60
       - API_PORT=8150
     ports:
       - "8150:8000"
-
-volumes:
-  postgres_data:

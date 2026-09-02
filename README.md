@@ -6,11 +6,33 @@ Backend para tesis: **modelo predictivo de cultivos** con Clean Architecture, Fa
 
 - **Python 3.13**
 - **FastAPI** + Uvicorn
-- **SQLAlchemy 2.0** + **PostgreSQL 16** (via psycopg2)
+- **SQLAlchemy 2.0** + **Supabase PostgreSQL** (via psycopg2)
 - **Alembic** (migraciones)
 - **JWT** con `python-jose` + `passlib[bcrypt]`
 - **scikit-learn** (RandomForest) + `joblib` para el modelo entrenado
 - **Docker** / Docker Compose
+
+## Requisitos previos
+
+### Docker Desktop
+Instalar desde https://www.docker.com/products/docker-desktop
+
+### Make (Windows)
+```powershell
+winget install GnuWin32.Make
+```
+Despues de instalar, **agregar al PATH del usuario** (ver paso detallado en "Levantar el proyecto").
+
+### Cliente PostgreSQL - psql (para export/import de BD)
+```powershell
+winget install PostgreSQL.PostgreSQL.16 --silent --accept-package-agreements --accept-source-agreements
+```
+Solo se necesita el cliente `psql`, no el servidor completo.
+
+### pgAdmin 4 (opcional - interfaz visual para BD)
+```powershell
+winget install PostgreSQL.pgAdmin --silent --accept-package-agreements --accept-source-agreements
+```
 
 ## Estructura del proyecto (Clean Architecture)
 
@@ -31,7 +53,7 @@ agro-predict-backend/
 │   ├── infrastructure/                  # IMPLEMENTACION EXTERNA
 │   │   ├── config/                      #   Settings + JWT + passwords
 │   │   ├── database/                    #   Base ORM + session + schemas
-│   │   ├── orm/                         #   Modelos SQLAlchemy (auth, core, security)
+│   │   ├── orm/                         #   Modelos SQLAlchemy (core, security)
 │   │   ├── repositories/                #   Implementaciones concretas
 │   │   └── ml/                          #   Modelo ML + entrenamiento
 │   │
@@ -67,23 +89,21 @@ HTTP Request → Presentation (schemas) → Use Cases (domain) → Repository In
 
 ## Esquemas de base de datos
 
-La base de datos usa **3 esquemas PostgreSQL**:
-
-### `auth`
-- **users**: id, email, hashed_password, is_active, is_admin, timestamps
-
-### `core`
-- **crops**: id, owner_id (FK->users), name, location, area_hectares, notes, timestamps
-- **predictions**: id, user_id (FK->users), crop_id (FK->crops), predicted_crop, probability, features ML, status, timestamps
+La base de datos usa **2 esquemas PostgreSQL**:
 
 ### `security`
-- **profiles**: id, user_id (FK->users, unique), first_name, last_name, phone, age, timestamps
-- **roles**: id, name (unique), description, timestamps
-- **user_roles**: id, user_id (FK->users), role_id (FK->roles), UNIQUE(user_id, role_id)
-- **menus**: id, parent_id (FK->menus), name, icon, route, order_index, is_active, timestamps
-- **permissions**: id, code (unique), name
-- **menu_permissions**: id, menu_id (FK->menus), permission_id (FK->permissions), UNIQUE(menu_id, permission_id)
-- **role_menu_permissions**: id, role_id (FK->roles), menu_id (FK->menus), permission_id (FK->permissions), UNIQUE(role_id, menu_id, permission_id)
+- **users**: id, email, hashed_password, is_admin, status, created_at, updated_at, deleted_at
+- **profiles**: id, user_id (FK->users, unique), first_name, last_name, phone, age, status, timestamps
+- **roles**: id, name (unique), description, status, timestamps
+- **user_roles**: id, user_id (FK->users), role_id (FK->roles), UNIQUE(user_id, role_id), status, timestamps
+- **menus**: id, parent_id (FK->menus), name, icon, route, order_index, status, timestamps
+- **permissions**: id, code (unique), name, status, timestamps
+- **menu_permissions**: id, menu_id (FK->menus), permission_id (FK->permissions), UNIQUE(menu_id, permission_id), status, timestamps
+- **role_menu_permissions**: id, role_id (FK->roles), menu_id (FK->menus), permission_id (FK->permissions), UNIQUE(role_id, menu_id, permission_id), status, timestamps
+
+### `core`
+- **crops**: id, owner_id (FK->users), name, location, area_hectares, notes, status, timestamps
+- **predictions**: id, user_id (FK->users), crop_id (FK->crops), predicted_crop, probability, features ML, status, timestamps
 
 ## RBAC (Role-Based Access Control)
 
@@ -149,7 +169,7 @@ make migrate-current
 
 ```bash
 # 1. Modificar un modelo ORM (ej: agregar columna phone a users)
-#    Archivo: app/infrastructure/orm/auth/user.py
+#    Archivo: app/infrastructure/orm/security/user.py
 
 # 2. Generar migracion (detecta el cambio automaticamente)
 make migrate-new msg="add phone to users"
@@ -165,8 +185,8 @@ make migrate-down
 
 ```python
 # 1. Editar el modelo ORM
-# app/infrastructure/orm/auth/user.py
-class User(TimestampMixin, Base):
+# app/infrastructure/orm/security/user.py
+class User(BitacoraMixin, Base):
     # ... columnas existentes ...
     phone: Mapped[str | None] = mapped_column(String(20), nullable=True)  # NUEVA
 
@@ -198,8 +218,9 @@ class User(TimestampMixin, Base):
 | `SECRET_KEY` | clave generica | clave real segura |
 | `ACCESS_TOKEN_EXPIRE_MINUTES` | `60` | `30` |
 | `CORS_ORIGINS` | `["http://localhost:5173"]` | URL del frontend real |
-| Puerto DB expuesto | `5432:5432` | No expuesto |
-| Puerto API | `8000:8000` | `8000:8000` |
+| Puerto API | `8150:8000` | `8150:8000` |
+
+**Nota:** Ambos ambientes se conectan a **Supabase** (no hay PostgreSQL local).
 
 ## Levantar el proyecto
 
@@ -262,10 +283,10 @@ make dev-reset        # Detener y eliminar volumenes(borrar TODO incluyendo la B
 docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
 ```
 
-- API: `http://localhost:8000`
-- Docs Swagger: `http://localhost:8000/docs`
-- PostgreSQL: `localhost:5432` (accesible desde el host)
-- Variables: lee `.env.dev`
+- API: `http://localhost:8150`
+- Docs Swagger: `http://localhost:8150/docs`
+- Base de datos: **Supabase** (remoto)
+- Variables: lee `.env`
 
 ### Produccion (sin Make)
 
@@ -273,37 +294,34 @@ docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
 docker compose -f docker-compose.yml -f docker-compose.prod.yml up --build
 ```
 
-- API: `http://localhost:8000`
+- API: `http://localhost:8150`
 - Docs Swagger: deshabilitar o proteger con auth
-- PostgreSQL: **no expuesto** al host (solo accesible entre contenedores)
-- Variables: lee `.env.prod`
+- Base de datos: **Supabase** (remoto)
+- Variables: lee `.env`
 - Contenedores con `restart: always`
 
 ### Solo local (sin Docker)
 
 ```bash
-# 1. Crear la base de datos
-createdb agropredict
-
-# 2. Entorno virtual
+# 1. Entorno virtual
 python -m venv .venv
 .venv\Scripts\activate          # Windows
 # source .venv/bin/activate     # Linux/Mac
 pip install -r requirements.txt
 
-# 3. Crear .env.dev con las variables de desarrollo
+# 2. Verificar que .env contiene DATABASE_URL de Supabase
 
-# 4. Dataset y modelo
+# 3. Dataset y modelo
 python -m data.generate_dataset
 python -m app.infrastructure.ml.train
 
-# 5. Aplicar migraciones (crea las tablas)
+# 4. Aplicar migraciones (crea las tablas en Supabase)
 alembic upgrade head
 
-# 6. Levantar
+# 5. Levantar
 uvicorn app.main:app --reload
 
-# 7. Seed + admin (una sola vez)
+# 6. Seed + admin (una sola vez)
 python -m app.scripts.seed_data
 python -m app.scripts.create_admin
 ```
@@ -315,38 +333,35 @@ python -m app.scripts.create_admin
 ```bash
 # Generar una clave segura para SECRET_KEY
 python -c "import secrets; print(secrets.token_urlsafe(64))"
-
 # Generar una contrasena segura para PostgreSQL
 python -c "import secrets; print(secrets.token_urlsafe(32))"
 
-# Actualizar .env.prod con los valores generados
 ```
 
-Cambiar en `.env.prod`:
+Cambiar en `.env`:
 - `SECRET_KEY`: usar la clave generada
-- `POSTGRES_PASSWORD`: usar la contrasena generada
-- `DATABASE_URL`: actualizar con la nueva contrasena
+- `DATABASE_URL`: verificar que apunta a Supabase con `?sslmode=require`
 - `CORS_ORIGINS`: URL real del frontend
 
 ## Uso rapido (curl)
 
 ```bash
 # Registrar usuario
-curl -X POST http://localhost:8000/api/v1/auth/register \
+curl -X POST http://localhost:8150/api/v1/auth/register \
   -H "Content-Type: application/json" \
   -d '{"email":"demo@tesis.com","password":"secret123"}'
 
 # Obtener token JWT
-curl -X POST http://localhost:8000/api/v1/auth/login \
+curl -X POST http://localhost:8150/api/v1/auth/login \
   -H "Content-Type: application/json" \
   -d '{"email":"demo@tesis.com","password":"secret123"}'
 
 # CRUD de cultivos
-curl http://localhost:8000/api/v1/crops \
+curl http://localhost:8150/api/v1/crops \
   -H "Authorization: Bearer <token>"
 
 # Prediccion
-curl -X POST http://localhost:8000/api/v1/predictions \
+curl -X POST http://localhost:8150/api/v1/predictions \
   -H "Authorization: Bearer <token>" \
   -H "Content-Type: application/json" \
   -d '{"N":90,"P":42,"K":43,"temperature":20.8,"humidity":82,"ph":6.5,"rainfall":202}'
@@ -398,7 +413,7 @@ curl -X POST http://localhost:8000/api/v1/predictions \
 | GET | `/api/v1/admin/role-menu-permissions/{role_id}` | Admin | Permisos de un rol |
 | DELETE | `/api/v1/admin/role-menu-permissions/{rmp_id}` | Admin | Remover permiso |
 
-Documentacion interactiva: `http://localhost:8000/docs`
+Documentacion interactiva: `http://localhost:8150/docs`
 
 ## Modelo ML
 
@@ -417,16 +432,20 @@ python -m app.infrastructure.ml.train
 
 ### Desde DBeaver / pgAdmin (desarrollo)
 
-- Host: `localhost`
+Conectar directamente a Supabase:
+
+- Host: `aws-0-us-east-1.pooler.supabase.com`
 - Puerto: `5432`
-- Database: `agropredict`
-- User: `agro`
-- Password: `agro123`
+- Database: `postgres`
+- User: `postgres.eqhzwaylqbusidlcpkvs`
+- Password: `AgroPrdict-lvbo87Pz4l1qui4w`
+- SSL: `require`
 
 ### Desde dentro de otro contenedor Docker
 
 ```bash
-psql -U agro -d agropredict -h db
+# La app se conecta via DATABASE_URL en .env
+# No hay PostgreSQL local, todo va a Supabase
 ```
 
 ### Esquemas

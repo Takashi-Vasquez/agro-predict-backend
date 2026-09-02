@@ -12,7 +12,6 @@ from app.infrastructure.database.base import Base
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 # Importa TODOS los modelos para que Base.metadata los conozca
-import app.infrastructure.orm.auth.user  # noqa: F401
 import app.infrastructure.orm.core.crop  # noqa: F401
 import app.infrastructure.orm.core.prediction  # noqa: F401
 import app.infrastructure.orm.security.profile  # noqa: F401

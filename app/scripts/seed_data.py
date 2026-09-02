@@ -11,7 +11,7 @@ from app.infrastructure.config.security import hash_password
 from app.infrastructure.orm.security.user import User
 from sqlalchemy import select
 
-from app.infrastructure.database.session import SessionLocal
+from app.infrastructure.database.session import _get_session_factory
 from app.infrastructure.orm.security.menu import Menu
 from app.infrastructure.orm.security.menu_permission import MenuPermission
 from app.infrastructure.orm.security.permission import Permission
@@ -85,7 +85,7 @@ MENUS_DATA = [
 
 
 def seed() -> None:
-    db = SessionLocal()
+    db = _get_session_factory()()
     try:
         perm_created = 0
         perm_skipped = 0

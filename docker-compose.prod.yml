@@ -12,7 +12,7 @@ services:
     environment:
       - DATABASE_URL=postgresql+psycopg2://${POSTGRES_USER:-agro}:${POSTGRES_PASSWORD:-agro123}@db:5432/${POSTGRES_DB:-agropredict}
     ports:
-      - "8000:8000"
+      - "8150:8000"
     restart: always
     networks:
       - internal

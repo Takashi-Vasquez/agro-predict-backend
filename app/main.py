@@ -13,11 +13,13 @@ from app.presentation.api.v1.router import router
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
+    settings = get_settings()
     with engine.connect() as conn:
         conn.execute(text("CREATE SCHEMA IF NOT EXISTS core"))
         conn.execute(text("CREATE SCHEMA IF NOT EXISTS security"))
         conn.commit()
     Base.metadata.create_all(bind=engine)
+    print(f"\n  API disponible en http://localhost:8150/docs\n")
     yield
 
 

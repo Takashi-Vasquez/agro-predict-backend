@@ -6,7 +6,7 @@ services:
       POSTGRES_DB: agropredict
       SUPABASE_URL: postgresql://postgres.eqhzwaylqbusidlcpkvs:AgroPrdict-lvbo87Pz4l1qui4w@aws-0-us-east-1.pooler.supabase.com:5432/postgres
     ports:
-      - "5432:5432"
+      - "5433:5432"
 
   api:
     container_name: agro-predict-api-dev
@@ -14,8 +14,9 @@ services:
       - .env.dev
     environment:
       - DATABASE_URL=postgresql+psycopg2://agro:agro123@db:5432/agropredict
+      - API_PORT=8150
     ports:
-      - "8000:8000"
+      - "8150:8000"
 
 volumes:
   postgres_data:

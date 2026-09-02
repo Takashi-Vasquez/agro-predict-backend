@@ -16,9 +16,10 @@ class Settings(BaseSettings):
 
     APP_NAME: str = "Agro Predict API"
     API_V1_PREFIX: str = "/api/v1"
+    API_PORT: int = 8000
     DEBUG: bool = False
 
-    DATABASE_URL: str = "postgresql+psycopg2://agro:agro123@localhost:5432/agropredict"
+    DATABASE_URL: str = "postgresql+psycopg2://agro:agro123@localhost:5433/agropredict"
     SECRET_KEY: str = "change-me-in-production"
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 480

@@ -1,4 +1,4 @@
-from sqlalchemy import ForeignKey, Integer, String
+from sqlalchemy import ForeignKey, Integer, String, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.infrastructure.database.base import Base, BitacoraMixin, Schemas
@@ -6,9 +6,13 @@ from app.infrastructure.database.base import Base, BitacoraMixin, Schemas
 
 class Menu(BitacoraMixin, Base):
     __tablename__ = "menus"
-    __table_args__ = {"schema": Schemas.SECURITY}
+    __table_args__ = (
+        UniqueConstraint("code", name="uq_menu_code"),
+        {"schema": Schemas.SECURITY},
+    )
 
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
+    code: Mapped[str] = mapped_column(String(100), nullable=False)
     parent_id: Mapped[int | None] = mapped_column(
         Integer,
         ForeignKey("security.menus.id", ondelete="CASCADE"),
@@ -19,6 +23,7 @@ class Menu(BitacoraMixin, Base):
     icon: Mapped[str | None] = mapped_column(String(50), nullable=True)
     route: Mapped[str | None] = mapped_column(String(255), nullable=True)
     order_index: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    badge: Mapped[str | None] = mapped_column(String(50), nullable=True)
 
     parent = relationship("Menu", remote_side="Menu.id", back_populates="children", lazy="selectin")
     children = relationship("Menu", back_populates="parent", lazy="selectin")

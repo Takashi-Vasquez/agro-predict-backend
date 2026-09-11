@@ -19,9 +19,12 @@ class Crop:
     id: int = 0
     owner_id: int = 0
     name: str = ""
-    location: str | None = None
-    area_hectares: float = 0.0
-    notes: str | None = None
+    variety: str = ""
+    category: str = ""
+    cycle: int = 0
+    temperature: str = ""
+    water: str = ""
+    color: str = ""
     status: str = "ACTIVE"
     created_at: datetime = field(default_factory=datetime.utcnow)
     updated_at: datetime = field(default_factory=datetime.utcnow)
@@ -77,11 +80,13 @@ class Role:
 @dataclass
 class Menu:
     id: int = 0
+    code: str = ""
     parent_id: int | None = None
     name: str = ""
     icon: str | None = None
     route: str | None = None
     order_index: int = 0
+    badge: str | None = None
     status: str = "ACTIVE"
     created_at: datetime = field(default_factory=datetime.utcnow)
     updated_at: datetime = field(default_factory=datetime.utcnow)

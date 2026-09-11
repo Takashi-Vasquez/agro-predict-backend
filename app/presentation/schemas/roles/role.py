@@ -2,6 +2,8 @@ from datetime import datetime
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from app.presentation.schemas import BaseReadSchema
+
 
 class RoleBase(BaseModel):
     name: str = Field(min_length=1, max_length=100)
@@ -17,10 +19,10 @@ class RoleUpdate(BaseModel):
     description: str | None = None
 
 
-class RoleRead(RoleBase):
-    model_config = ConfigDict(from_attributes=True)
+class RoleRead(RoleBase, BaseReadSchema):
+    model_config = ConfigDict(from_attributes=True, populate_by_name=True)
 
-    id: int
+    id: int = Field(alias="id")
     status: str
     created_at: datetime
     updated_at: datetime

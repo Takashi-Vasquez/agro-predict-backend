@@ -39,8 +39,27 @@ class CropRepositoryImpl(CropRepository):
         )
         return [self._to_entity(o) for o in self.db.scalars(stmt).all()]
 
-    def create(self, owner_id: int, name: str, location: str | None, area_hectares: float, notes: str | None) -> Crop:
-        orm = CropModel(owner_id=owner_id, name=name, location=location, area_hectares=area_hectares, notes=notes)
+    def create(
+        self,
+        owner_id: int,
+        name: str,
+        variety: str,
+        category: str,
+        cycle: int,
+        temperature: str,
+        water: str,
+        color: str,
+    ) -> Crop:
+        orm = CropModel(
+            owner_id=owner_id,
+            name=name,
+            variety=variety,
+            category=category,
+            cycle=cycle,
+            temperature=temperature,
+            water=water,
+            color=color,
+        )
         self.db.add(orm)
         self.db.commit()
         self.db.refresh(orm)
@@ -66,9 +85,12 @@ class CropRepositoryImpl(CropRepository):
             id=orm.id,
             owner_id=orm.owner_id,
             name=orm.name,
-            location=orm.location,
-            area_hectares=orm.area_hectares,
-            notes=orm.notes,
+            variety=orm.variety,
+            category=orm.category,
+            cycle=orm.cycle,
+            temperature=orm.temperature,
+            water=orm.water,
+            color=orm.color,
             status=orm.status,
             created_at=orm.created_at,
             updated_at=orm.updated_at,

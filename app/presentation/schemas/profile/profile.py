@@ -2,6 +2,8 @@ from datetime import datetime
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from app.presentation.schemas import BaseReadSchema
+
 
 class ProfileBase(BaseModel):
     first_name: str = Field(min_length=1, max_length=100)
@@ -21,11 +23,11 @@ class ProfileUpdate(BaseModel):
     age: int | None = None
 
 
-class ProfileRead(ProfileBase):
-    model_config = ConfigDict(from_attributes=True)
+class ProfileRead(ProfileBase, BaseReadSchema):
+    model_config = ConfigDict(from_attributes=True, populate_by_name=True)
 
-    id: int
-    user_id: int
+    id: int = Field(alias="id")
+    user_id: int = Field(alias="userId")
     status: str
     created_at: datetime
     updated_at: datetime

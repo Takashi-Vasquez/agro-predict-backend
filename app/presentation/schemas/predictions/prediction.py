@@ -2,6 +2,8 @@ from datetime import datetime
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from app.presentation.schemas import BaseReadSchema
+
 
 class PredictionInput(BaseModel):
     N: float = Field(ge=0, le=150, description="Nitrogeno (mg/kg)")
@@ -14,12 +16,12 @@ class PredictionInput(BaseModel):
     crop_id: int | None = Field(default=None, description="Cultivo opcional asociado")
 
 
-class PredictionRead(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
+class PredictionRead(BaseReadSchema):
+    model_config = ConfigDict(from_attributes=True, populate_by_name=True)
 
-    id: int
-    predicted_crop: str
-    probability: float
+    id: int = Field(alias="id")
+    predicted_crop: str = Field(alias="predictedCrop")
+    probability: float = Field(alias="probability")
     status: str
     created_at: datetime
-    crop_id: int | None = None
+    crop_id: int | None = Field(default=None, alias="cropId")

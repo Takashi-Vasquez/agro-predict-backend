@@ -9,6 +9,7 @@ from app.infrastructure.config.settings import get_settings
 from app.infrastructure.orm.base import Base
 from app.infrastructure.database.session import _get_engine
 from app.presentation.api.v1.router import router
+from app.presentation.utils.exception_middleware import ExceptionMiddleware
 
 
 @asynccontextmanager
@@ -41,6 +42,8 @@ def create_app() -> FastAPI:
         allow_methods=["*"],
         allow_headers=["*"],
     )
+
+    app.add_middleware(ExceptionMiddleware)
 
     app.include_router(router, prefix=settings.API_V1_PREFIX)
 

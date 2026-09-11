@@ -46,7 +46,17 @@ class CropRepository(ABC):
     def list_for_owner(self, owner_id: int, *, offset: int = 0, limit: int = 100) -> list[Crop]: ...
 
     @abstractmethod
-    def create(self, owner_id: int, name: str, location: str | None, area_hectares: float, notes: str | None) -> Crop: ...
+    def create(
+        self,
+        owner_id: int,
+        name: str,
+        variety: str,
+        category: str,
+        cycle: int,
+        temperature: str,
+        water: str,
+        color: str,
+    ) -> Crop: ...
 
     @abstractmethod
     def update(self, crop: Crop, **kwargs) -> Crop: ...

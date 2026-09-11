@@ -20,21 +20,21 @@ def get_current_user(
 ) -> User:
     if credentials is None:
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
+            statusCode=status.HTTP_401_UNAUTHORIZED,
             detail="Token de autenticacion requerido",
             headers={"WWW-Authenticate": "Bearer"},
         )
     sub = decode_access_token(credentials.credentials)
     if sub is None:
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
+            statusCode=status.HTTP_401_UNAUTHORIZED,
             detail="Credenciales invalidas o token expirado",
             headers={"WWW-Authenticate": "Bearer"},
         )
     user_repo = UserRepositoryImpl(db)
     user = user_repo.get(int(sub))
     if user is None:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Usuario no encontrado")
+        raise HTTPException(statusCode=status.HTTP_401_UNAUTHORIZED, detail="Usuario no encontrado")
     return db.get(User, user.id)
 
 

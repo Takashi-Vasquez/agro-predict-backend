@@ -2,44 +2,46 @@ from datetime import datetime
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
+from app.presentation.schemas import BaseReadSchema
+
 
 class RoleMenuPermissionCreate(BaseModel):
-    role_id: int
-    menu_id: int
-    permission_id: int
+    role_id: int = Field(alias="roleId")
+    menu_id: int = Field(alias="menuId")
+    permission_id: int = Field(alias="permissionId")
 
 
-class RoleMenuPermissionRead(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
+class RoleMenuPermissionRead(BaseReadSchema):
+    model_config = ConfigDict(from_attributes=True, populate_by_name=True)
 
-    id: int
-    role_id: int
-    menu_id: int
-    permission_id: int
+    id: int = Field(alias="id")
+    role_id: int = Field(alias="roleId")
+    menu_id: int = Field(alias="menuId")
+    permission_id: int = Field(alias="permissionId")
     status: str
     created_at: datetime
 
 
-class ProfileRead(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
+class ProfileRead(BaseReadSchema):
+    model_config = ConfigDict(from_attributes=True, populate_by_name=True)
 
-    id: int
-    user_id: int
-    first_name: str
-    last_name: str
-    phone: str | None = None
-    age: int | None = None
+    id: int = Field(alias="id")
+    user_id: int = Field(alias="userId")
+    first_name: str = Field(alias="firstName")
+    last_name: str = Field(alias="lastName")
+    phone: str | None = Field(default=None, alias="phone")
+    age: int | None = Field(default=None, alias="age")
     status: str
     created_at: datetime
     updated_at: datetime
 
 
-class RoleRead(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
+class RoleRead(BaseReadSchema):
+    model_config = ConfigDict(from_attributes=True, populate_by_name=True)
 
-    id: int
-    name: str
-    description: str | None = None
+    id: int = Field(alias="id")
+    name: str = Field(alias="name")
+    description: str | None = Field(default=None, alias="description")
     status: str
     created_at: datetime
     updated_at: datetime
@@ -48,20 +50,20 @@ class RoleRead(BaseModel):
 class UserWithProfileCreate(BaseModel):
     email: EmailStr
     password: str = Field(min_length=6, max_length=128)
-    first_name: str = Field(min_length=1, max_length=100)
-    last_name: str = Field(min_length=1, max_length=100)
-    phone: str | None = None
-    age: int | None = None
-    role_ids: list[int] = []
+    first_name: str = Field(min_length=1, max_length=100, alias="firstName")
+    last_name: str = Field(min_length=1, max_length=100, alias="lastName")
+    phone: str | None = Field(default=None, alias="phone")
+    age: int | None = Field(default=None, alias="age")
+    role_ids: list[int] = Field(default=[], alias="roleIds")
 
 
-class UserWithProfileRead(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
+class UserWithProfileRead(BaseReadSchema):
+    model_config = ConfigDict(from_attributes=True, populate_by_name=True)
 
-    id: int
-    email: str
+    id: int = Field(alias="id")
+    email: str = Field(alias="email")
     status: str
-    is_admin: bool
+    is_admin: bool = Field(alias="isAdmin")
     created_at: datetime
-    profile: ProfileRead | None = None
-    roles: list[RoleRead] = []
+    profile: ProfileRead | None = Field(default=None, alias="profile")
+    roles: list[RoleRead] = Field(default=[], alias="roles")

@@ -36,9 +36,9 @@ config.set_main_option("sqlalchemy.url", settings.DATABASE_URL)
 
 
 def include_names(name, type_, reflection_metadata):
-    """Incluir solo los schemas que usamos."""
+    """Incluir solo los schemas que usamos (NO incluir 'auth' - es de Supabase)."""
     if type_ == "schema":
-        return name in ("auth", "core", "security", "public")
+        return name in ("core", "security", "public")
     return True
 
 
@@ -68,8 +68,7 @@ def run_migrations_online() -> None:
     )
 
     with connectable.connect() as connection:
-        # Crear schemas si no existen
-        connection.execute(text("CREATE SCHEMA IF NOT EXISTS auth"))
+        # Crear schemas si no existen (NO crear 'auth' - es de Supabase)
         connection.execute(text("CREATE SCHEMA IF NOT EXISTS core"))
         connection.execute(text("CREATE SCHEMA IF NOT EXISTS security"))
         connection.commit()

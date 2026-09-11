@@ -1,14 +1,16 @@
-from fastapi import APIRouter, HTTPException, Query, status
+from fastapi import APIRouter, Query
 
 from app.presentation.api.deps import CurrentUser, DbDep
+from app.presentation.utils.api_response_factory import ApiResponseFactory
 from app.infrastructure.config.settings import get_settings
 from app.infrastructure.ml.model import CropPredictor
 from app.infrastructure.repositories.prediction_repository import PredictionRepositoryImpl
 from app.presentation.schemas.predictions.prediction import PredictionInput, PredictionRead
+from app.domain.exceptions import AppException
 from app.domain.use_cases.predictions.predict import PredictUseCase
 from app.domain.use_cases.predictions.list_predictions import ListPredictionsUseCase
 
-router = APIRouter(prefix="/predictions", tags=["predictions"])
+router = APIRouter(prefix="/operations/predictions", tags=["predictions"])
 
 _predictor: CropPredictor | None = None
 
@@ -21,8 +23,8 @@ def get_predictor() -> CropPredictor:
     return _predictor
 
 
-@router.post("", response_model=PredictionRead, status_code=status.HTTP_201_CREATED)
-def predict(payload: PredictionInput, user: CurrentUser, db: DbDep) -> PredictionRead:
+@router.post("")
+def predict(payload: PredictionInput, user: CurrentUser, db: DbDep):
     try:
         use_case = PredictUseCase(PredictionRepositoryImpl(db), get_predictor())
         record = use_case.execute(
@@ -30,25 +32,23 @@ def predict(payload: PredictionInput, user: CurrentUser, db: DbDep) -> Predictio
             data=payload.model_dump(),
             crop_id=payload.crop_id,
         )
-    except FileNotFoundError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="Modelo no disponible. Entrena el modelo primero (ver README).",
-        ) from exc
-    except ValueError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail=str(exc),
+    except FileNotFoundError:
+        raise AppException.bad_request(
+            "Modelo no disponible. Entrena el modelo primero (ver README)."
         )
-    return PredictionRead.model_validate(record)
+    except ValueError as exc:
+        raise AppException.bad_request(str(exc))
+    data = PredictionRead.model_validate(record).model_dump()
+    return ApiResponseFactory.created(data, "Predicción generada correctamente")
 
 
-@router.get("", response_model=list[PredictionRead])
+@router.get("")
 def list_predictions(
     user: CurrentUser,
     db: DbDep,
     offset: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=1000),
-) -> list[PredictionRead]:
+):
     rows = ListPredictionsUseCase(PredictionRepositoryImpl(db)).execute(user.id, offset, limit)
-    return [PredictionRead.model_validate(r) for r in rows]
+    data = [PredictionRead.model_validate(r).model_dump() for r in rows]
+    return ApiResponseFactory.ok(data, "Predicciones obtenidas correctamente")

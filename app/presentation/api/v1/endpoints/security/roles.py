@@ -1,16 +1,16 @@
 from fastapi import APIRouter
 
 from app.presentation.api.deps import CurrentUser, DbDep
-from app.presentation.schemas.roles.role import RoleCreate, RoleRead, RoleUpdate
+from app.presentation.schemas.security.roles.role import RoleCreate, RoleRead, RoleUpdate
 from app.presentation.utils.api_response_factory import ApiResponseFactory
-from app.infrastructure.repositories.role_repository import RoleRepositoryImpl
+from app.infrastructure.repositories.security.role_repository import RoleRepositoryImpl
 from app.domain.exceptions import AppException
-from app.domain.use_cases.roles.create_role import CreateRoleUseCase
-from app.domain.use_cases.roles.list_roles import ListRolesUseCase
-from app.domain.use_cases.roles.update_role import UpdateRoleUseCase
-from app.domain.use_cases.roles.delete_role import DeleteRoleUseCase
+from app.domain.use_cases.security.roles.create_role import CreateRoleUseCase
+from app.domain.use_cases.security.roles.list_roles import ListRolesUseCase
+from app.domain.use_cases.security.roles.update_role import UpdateRoleUseCase
+from app.domain.use_cases.security.roles.delete_role import DeleteRoleUseCase
 
-router = APIRouter(prefix="/roles", tags=["roles"])
+router = APIRouter(prefix="/security/roles", tags=["Security/Roles"])
 
 
 def _require_admin(user: CurrentUser) -> None:
@@ -32,7 +32,7 @@ def create_role(data: RoleCreate, user: CurrentUser, db: DbDep):
     _require_admin(user)
     role_repo = RoleRepositoryImpl(db)
     try:
-        role = CreateRoleUseCase(role_repo).execute(name=data.name, description=data.description)
+        role = CreateRoleUseCase(role_repo).execute(name=data.name, description=data.description, status=data.status)
     except ValueError as exc:
         raise AppException.conflict(str(exc))
     result = RoleRead.model_validate(role).model_dump()

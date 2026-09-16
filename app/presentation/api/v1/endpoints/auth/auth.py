@@ -1,18 +1,18 @@
 from fastapi import APIRouter
 
 from app.presentation.api.deps import CurrentUser, DbDep
-from app.presentation.schemas.auth.token import LoginRequest, Token
-from app.presentation.schemas.auth.user_me import UserMeRead, MenuTreeRead, RoleRead
+from app.presentation.schemas.security.auth.token import LoginRequest, Token
+from app.presentation.schemas.security.users.user_me import UserMeRead, MenuTreeRead, RoleRead
 from app.presentation.utils.api_response_factory import ApiResponseFactory
-from app.infrastructure.repositories.user_repository import UserRepositoryImpl
-from app.infrastructure.repositories.profile_repository import ProfileRepositoryImpl
-from app.infrastructure.repositories.user_role_repository import UserRoleRepositoryImpl
-from app.infrastructure.repositories.menu_repository import MenuRepositoryImpl
+from app.infrastructure.repositories.security.user_repository import UserRepositoryImpl
+from app.infrastructure.repositories.security.profile_repository import ProfileRepositoryImpl
+from app.infrastructure.repositories.security.user_role_repository import UserRoleRepositoryImpl
+from app.infrastructure.repositories.security.menu_repository import MenuRepositoryImpl
 from app.domain.exceptions import AppException
 from app.domain.use_cases.auth.login import LoginUseCase
 from app.domain.use_cases.auth.get_user import GetUserUseCase
 
-router = APIRouter(prefix="/auth", tags=["auth"])
+router = APIRouter(prefix="/auth", tags=["Auth"])
 
 
 @router.post("/login", response_model=Token)
@@ -23,7 +23,7 @@ def login(data: LoginRequest, db: DbDep) -> Token:
         _user, token = use_case.execute(data.email, data.password)
     except ValueError as exc:
         raise AppException.unauthorized(str(exc))
-    return ApiResponseFactory.ok(Token(access_token=token).model_dump(), "Login exitoso")
+    return ApiResponseFactory.ok(Token(accessToken=token).model_dump(), "Login exitoso")
 
 
 @router.get("/user")

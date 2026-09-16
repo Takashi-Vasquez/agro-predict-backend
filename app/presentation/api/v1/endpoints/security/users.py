@@ -4,21 +4,21 @@ from sqlalchemy.orm import Session
 from app.presentation.api.deps import CurrentUser, DbDep
 from app.presentation.utils.api_response_factory import ApiResponseFactory
 from app.infrastructure.orm.security.user import User
-from app.infrastructure.repositories.user_repository import UserRepositoryImpl
-from app.infrastructure.repositories.profile_repository import ProfileRepositoryImpl
-from app.infrastructure.repositories.role_repository import RoleRepositoryImpl
-from app.infrastructure.repositories.user_role_repository import UserRoleRepositoryImpl
-from app.presentation.schemas.profile.profile import ProfileRead, ProfileUpdate
-from app.presentation.schemas.roles.role import RoleRead
-from app.presentation.schemas.users.user_with_profile import UserWithProfileCreate, UserWithProfileRead
+from app.infrastructure.repositories.security.user_repository import UserRepositoryImpl
+from app.infrastructure.repositories.security.profile_repository import ProfileRepositoryImpl
+from app.infrastructure.repositories.security.role_repository import RoleRepositoryImpl
+from app.infrastructure.repositories.security.user_role_repository import UserRoleRepositoryImpl
+from app.presentation.schemas.security.profile.profile import ProfileRead, ProfileUpdate
+from app.presentation.schemas.security.roles.role import RoleRead
+from app.presentation.schemas.security.users.user_with_profile import UserWithProfileCreate, UserWithProfileRead
 from app.domain.exceptions import AppException
-from app.domain.use_cases.users.create_user import CreateUserUseCase
-from app.domain.use_cases.users.list_users import ListUsersUseCase
-from app.domain.use_cases.users.delete_user import DeleteUserUseCase
+from app.domain.use_cases.security.users.create_user import CreateUserUseCase
+from app.domain.use_cases.security.users.list_users import ListUsersUseCase
+from app.domain.use_cases.security.users.delete_user import DeleteUserUseCase
 from app.infrastructure.config.security import hash_password
 from app.infrastructure.orm.security.user_role import UserRole as UserRoleModel
 
-router = APIRouter(prefix="/users", tags=["users"])
+router = APIRouter(prefix="/security/users", tags=["Security/Users"])
 
 
 def _require_admin(user: CurrentUser) -> None:

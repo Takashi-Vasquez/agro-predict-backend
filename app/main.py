@@ -10,6 +10,7 @@ from app.infrastructure.orm.base import Base
 from app.infrastructure.database.session import _get_engine
 from app.presentation.api.v1.router import router
 from app.presentation.utils.exception_middleware import ExceptionMiddleware
+from app.presentation.api.tags import get_tags
 
 
 @asynccontextmanager
@@ -19,6 +20,8 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     with engine.connect() as conn:
         conn.execute(text("CREATE SCHEMA IF NOT EXISTS core"))
         conn.execute(text("CREATE SCHEMA IF NOT EXISTS security"))
+        conn.execute(text("CREATE SCHEMA IF NOT EXISTS operations"))
+        conn.execute(text("CREATE SCHEMA IF NOT EXISTS monitoring"))
         conn.commit()
     Base.metadata.create_all(bind=engine)
     print(f"\n  API disponible en http://localhost:8150/docs\n")
@@ -33,6 +36,7 @@ def create_app() -> FastAPI:
         version="0.1.0",
         description="API de prediccion de cultivos para tesis. Clean Architecture.",
         lifespan=lifespan,
+        openapi_tags=get_tags(),
     )
 
     app.add_middleware(

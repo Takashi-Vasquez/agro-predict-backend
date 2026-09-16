@@ -2,25 +2,25 @@ from fastapi import APIRouter
 
 from app.presentation.api.deps import CurrentUser, DbDep
 from app.presentation.utils.api_response_factory import ApiResponseFactory
-from app.infrastructure.repositories.menu_repository import MenuRepositoryImpl
-from app.infrastructure.repositories.menu_permission_repository import MenuPermissionRepositoryImpl
-from app.infrastructure.repositories.permission_repository import PermissionRepositoryImpl
-from app.infrastructure.repositories.role_menu_permission_repository import RoleMenuPermissionRepositoryImpl
-from app.infrastructure.repositories.role_repository import RoleRepositoryImpl
-from app.presentation.schemas.profile.menu import MenuTreeRead
-from app.presentation.schemas.profile.permission import PermissionRead
-from app.presentation.schemas.profile.role_menu_permission import (
+from app.infrastructure.repositories.security.menu_repository import MenuRepositoryImpl
+from app.infrastructure.repositories.security.menu_permission_repository import MenuPermissionRepositoryImpl
+from app.infrastructure.repositories.security.permission_repository import PermissionRepositoryImpl
+from app.infrastructure.repositories.security.role_menu_permission_repository import RoleMenuPermissionRepositoryImpl
+from app.infrastructure.repositories.security.role_repository import RoleRepositoryImpl
+from app.presentation.schemas.security.menu.menu import MenuTreeRead
+from app.presentation.schemas.security.permission.permission import PermissionRead
+from app.presentation.schemas.security.role_menu_permission.role_menu_permission import (
     RoleMenuPermissionBulkCreate,
     RoleMenuPermissionCreate,
     RoleMenuPermissionRead,
 )
 from app.domain.exceptions import AppException
-from app.domain.use_cases.permissions.assign_permission import AssignPermissionUseCase
-from app.domain.use_cases.permissions.list_role_permissions import ListRolePermissionsUseCase
-from app.domain.use_cases.permissions.remove_permission import RemovePermissionUseCase
-from app.domain.use_cases.permissions.sync_role_permissions import SyncRolePermissionsUseCase
+from app.domain.use_cases.security.permissions.assign_permission import AssignPermissionUseCase
+from app.domain.use_cases.security.permissions.list_role_permissions import ListRolePermissionsUseCase
+from app.domain.use_cases.security.permissions.remove_permission import RemovePermissionUseCase
+from app.domain.use_cases.security.permissions.sync_role_permissions import SyncRolePermissionsUseCase
 
-router = APIRouter(prefix="/profile", tags=["profile"])
+router = APIRouter(prefix="/security/profile", tags=["Security/Permissions"])
 
 
 def _require_admin(user: CurrentUser) -> None:
@@ -110,7 +110,7 @@ def _build_menu_tree_entity(menu, menu_repo, mp_repo) -> MenuTreeRead:
     from app.domain.entities import Menu as MenuEntity
 
     menu_entity = MenuEntity(
-        id=menu.id, parent_id=menu.parent_id, name=menu.name, icon=menu.icon,
+        id=menu.id, parent_id=menu.parent_id, code=menu.code, name=menu.name, icon=menu.icon,
         route=menu.route, order_index=menu.order_index, badge=menu.badge, status=menu.status,
     )
     children = menu_repo.get_children(menu.id)
@@ -118,6 +118,7 @@ def _build_menu_tree_entity(menu, menu_repo, mp_repo) -> MenuTreeRead:
     return MenuTreeRead(
         id=menu_entity.id,
         parent_id=menu_entity.parent_id,
+        code=menu_entity.code,
         name=menu_entity.name,
         icon=menu_entity.icon,
         route=menu_entity.route,

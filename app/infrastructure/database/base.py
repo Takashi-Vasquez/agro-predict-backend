@@ -11,6 +11,10 @@ class Base(DeclarativeBase):
 class Schemas:
     CORE = "core"
     SECURITY = "security"
+    OPERATIONS = "operations"
+    MONITORING = "monitoring"
+    OPERATIONS = "operations"
+    MONITORING = "monitoring"
 
 
 class BitacoraMixin:

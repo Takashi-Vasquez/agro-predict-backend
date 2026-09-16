@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 from app.infrastructure.config.security import decode_access_token
 from app.infrastructure.database.session import get_db
 from app.infrastructure.orm.security.user import User
-from app.infrastructure.repositories.user_repository import UserRepositoryImpl
+from app.infrastructure.repositories.security.user_repository import UserRepositoryImpl
 
 bearer_scheme = HTTPBearer()
 

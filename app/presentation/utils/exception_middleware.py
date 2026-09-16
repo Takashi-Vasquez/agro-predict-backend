@@ -2,6 +2,7 @@ import traceback
 
 from fastapi import Request
 from fastapi.responses import JSONResponse
+from sqlalchemy.exc import IntegrityError
 from starlette.middleware.base import BaseHTTPMiddleware
 
 from app.domain.exceptions import AppException
@@ -19,6 +20,15 @@ class ExceptionMiddleware(BaseHTTPMiddleware):
                 content=ApiResponse(
                     statusCode=exc.statusCode,
                     message=str(exc),
+                    data=None,
+                ).model_dump(mode="json"),
+            )
+        except IntegrityError:
+            return JSONResponse(
+                status_code=409,
+                content=ApiResponse(
+                    statusCode=409,
+                    message="El recurso ya existe",
                     data=None,
                 ).model_dump(mode="json"),
             )

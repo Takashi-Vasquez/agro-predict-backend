@@ -12,8 +12,8 @@ from app.infrastructure.database.base import Base
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 # Importa TODOS los modelos para que Base.metadata los conozca
-import app.infrastructure.orm.core.crop  # noqa: F401
-import app.infrastructure.orm.core.prediction  # noqa: F401
+import app.infrastructure.orm.operations.crop  # noqa: F401
+import app.infrastructure.orm.general.prediction  # noqa: F401
 import app.infrastructure.orm.security.profile  # noqa: F401
 import app.infrastructure.orm.security.role  # noqa: F401
 import app.infrastructure.orm.security.user_role  # noqa: F401
@@ -38,7 +38,7 @@ config.set_main_option("sqlalchemy.url", settings.DATABASE_URL)
 def include_names(name, type_, reflection_metadata):
     """Incluir solo los schemas que usamos (NO incluir 'auth' - es de Supabase)."""
     if type_ == "schema":
-        return name in ("core", "security", "public")
+        return name in ("core", "security", "operations", "monitoring", "public")
     return True
 
 
@@ -71,11 +71,13 @@ def run_migrations_online() -> None:
         # Crear schemas si no existen (NO crear 'auth' - es de Supabase)
         connection.execute(text("CREATE SCHEMA IF NOT EXISTS core"))
         connection.execute(text("CREATE SCHEMA IF NOT EXISTS security"))
+        connection.execute(text("CREATE SCHEMA IF NOT EXISTS operations"))
+        connection.execute(text("CREATE SCHEMA IF NOT EXISTS monitoring"))
         connection.commit()
 
         # Configurar search_path via execution_options (persiste para la sesión)
         connection = connection.execution_options(
-            schema_search_path="auth, core, security, public"
+            schema_search_path="auth, core, security, operations, monitoring, public"
         )
 
         context.configure(

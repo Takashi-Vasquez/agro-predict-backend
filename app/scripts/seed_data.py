@@ -13,7 +13,7 @@ from sqlalchemy import select
 
 from app.infrastructure.config.security import hash_password
 from app.infrastructure.database.session import _get_session_factory
-from app.infrastructure.orm.core.crop import Crop
+from app.infrastructure.orm.operations.crop import Crop
 from app.infrastructure.orm.security.menu import Menu
 from app.infrastructure.orm.security.menu_permission import MenuPermission
 from app.infrastructure.orm.security.permission import Permission

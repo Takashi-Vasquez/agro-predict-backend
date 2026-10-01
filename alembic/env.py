@@ -13,6 +13,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 # Importa TODOS los modelos para que Base.metadata los conozca
 import app.infrastructure.orm.operations.crop  # noqa: F401
+import app.infrastructure.orm.operations.variety  # noqa: F401
 import app.infrastructure.orm.general.prediction  # noqa: F401
 import app.infrastructure.orm.security.profile  # noqa: F401
 import app.infrastructure.orm.security.role  # noqa: F401
@@ -21,6 +22,15 @@ import app.infrastructure.orm.security.menu  # noqa: F401
 import app.infrastructure.orm.security.permission  # noqa: F401
 import app.infrastructure.orm.security.menu_permission  # noqa: F401
 import app.infrastructure.orm.security.role_menu_permission  # noqa: F401
+import app.infrastructure.orm.monitoring.weather  # noqa: F401
+import app.infrastructure.orm.general.training_field  # noqa: F401
+import app.infrastructure.orm.general.training_record  # noqa: F401
+import app.infrastructure.orm.general.trained_model  # noqa: F401
+import app.infrastructure.orm.general.campaign  # noqa: F401
+import app.infrastructure.orm.general.model_version  # noqa: F401
+import app.infrastructure.orm.general.model_run  # noqa: F401
+import app.infrastructure.orm.core.catalog  # noqa: F401
+import app.infrastructure.orm.core.catalog_detail  # noqa: F401
 
 # Configuración de logging desde alembic.ini
 config = context.config

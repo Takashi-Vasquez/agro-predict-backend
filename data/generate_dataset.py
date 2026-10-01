@@ -9,7 +9,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-FEATURES = ["N", "P", "K", "temperature", "humidity", "ph", "rainfall"]
+FEATURES = ["nitrogen", "phosphorus", "potassium", "temperature", "humidity", "ph_soil", "rainfall"]
 
 CROPS = [
     "rice", "maize", "chickpea", "kidneybeans", "pigeonpeas", "mothbeans",

@@ -8,6 +8,9 @@ venv/
 env/
 ENV/
 
+# Visual studio
+.vs/
+
 # Tests
 .pytest_cache/
 .mypy_cache/

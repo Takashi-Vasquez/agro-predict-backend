@@ -8,17 +8,14 @@ class CropRepository(ABC):
     def get(self, crop_id: int) -> Crop | None: ...
 
     @abstractmethod
-    def get_owned(self, owner_id: int, crop_id: int) -> Crop | None: ...
-
-    @abstractmethod
-    def list_for_owner(self, owner_id: int, *, offset: int = 0, limit: int = 100) -> list[Crop]: ...
+    def list_all(self, *, offset: int = 0, limit: int = 100) -> list[Crop]: ...
 
     @abstractmethod
     def create(
         self,
         owner_id: int,
         name: str,
-        variety: str,
+        variety_id: int,
         category: str,
         cycle: int,
         temperature: str,

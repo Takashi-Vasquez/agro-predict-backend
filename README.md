@@ -15,21 +15,27 @@ Backend para tesis: **modelo predictivo de cultivos** con Clean Architecture, Fa
 ## Requisitos previos
 
 ### Docker Desktop
+
 Instalar desde https://www.docker.com/products/docker-desktop
 
 ### Make (Windows)
+
 ```powershell
 winget install GnuWin32.Make
 ```
+
 Despues de instalar, **agregar al PATH del usuario** (ver paso detallado en "Levantar el proyecto").
 
 ### Cliente PostgreSQL - psql (para export/import de BD)
+
 ```powershell
 winget install PostgreSQL.PostgreSQL.16 --silent --accept-package-agreements --accept-source-agreements
 ```
+
 Solo se necesita el cliente `psql`, no el servidor completo.
 
 ### pgAdmin 4 (opcional - interfaz visual para BD)
+
 ```powershell
 winget install PostgreSQL.pgAdmin --silent --accept-package-agreements --accept-source-agreements
 ```
@@ -92,6 +98,7 @@ HTTP Request → Presentation (schemas) → Use Cases (domain) → Repository In
 La base de datos usa **2 esquemas PostgreSQL**:
 
 ### `security`
+
 - **users**: id, email, hashed_password, is_admin, status, created_at, updated_at, deleted_at
 - **profiles**: id, user_id (FK->users, unique), first_name, last_name, phone, age, status, timestamps
 - **roles**: id, name (unique), description, status, timestamps
@@ -102,6 +109,7 @@ La base de datos usa **2 esquemas PostgreSQL**:
 - **role_menu_permissions**: id, role_id (FK->roles), menu_id (FK->menus), permission_id (FK->permissions), UNIQUE(role_id, menu_id, permission_id), status, timestamps
 
 ### `core`
+
 - **crops**: id, owner_id (FK->users), name, location, area_hectares, notes, status, timestamps
 - **predictions**: id, user_id (FK->users), crop_id (FK->crops), predicted_crop, probability, features ML, status, timestamps
 
@@ -201,24 +209,24 @@ class User(BitacoraMixin, Base):
 
 ### Equivalencia con .NET
 
-| .NET (Entity Framework) | Python (Alembic) |
-|---|---|
-| `dotnet ef migrations add X` | `make migrate-new msg="X"` |
-| `dotnet ef database update` | `make migrate` |
-| `dotnet ef migrations remove` | `make migrate-down` |
-| `__EFMigrationsHistory` | `alembic_version` |
+| .NET (Entity Framework)       | Python (Alembic)           |
+| ----------------------------- | -------------------------- |
+| `dotnet ef migrations add X`  | `make migrate-new msg="X"` |
+| `dotnet ef database update`   | `make migrate`             |
+| `dotnet ef migrations remove` | `make migrate-down`        |
+| `__EFMigrationsHistory`       | `alembic_version`          |
 
 ## Ambientes (dev / prod)
 
 ### Configuracion por ambiente
 
-| Variable | Dev | Prod |
-|---|---|---|
-| `DEBUG` | `true` | `false` |
-| `SECRET_KEY` | clave generica | clave real segura |
-| `ACCESS_TOKEN_EXPIRE_MINUTES` | `60` | `30` |
-| `CORS_ORIGINS` | `["http://localhost:5173"]` | URL del frontend real |
-| Puerto API | `8150:8000` | `8150:8000` |
+| Variable                      | Dev                         | Prod                  |
+| ----------------------------- | --------------------------- | --------------------- |
+| `DEBUG`                       | `true`                      | `false`               |
+| `SECRET_KEY`                  | clave generica              | clave real segura     |
+| `ACCESS_TOKEN_EXPIRE_MINUTES` | `480`                       | `360`                 |
+| `CORS_ORIGINS`                | `["http://localhost:5173"]` | URL del frontend real |
+| Puerto API                    | `8150:8000`                 | `8150:8000`           |
 
 **Nota:** Ambos ambientes se conectan a **Supabase** (no hay PostgreSQL local).
 
@@ -339,6 +347,7 @@ python -c "import secrets; print(secrets.token_urlsafe(32))"
 ```
 
 Cambiar en `.env`:
+
 - `SECRET_KEY`: usar la clave generada
 - `DATABASE_URL`: verificar que apunta a Supabase con `?sslmode=require`
 - `CORS_ORIGINS`: URL real del frontend
@@ -370,48 +379,52 @@ curl -X POST http://localhost:8150/api/v1/predictions \
 ## Endpoints
 
 ### Auth
-| Metodo | Ruta | Auth | Descripcion |
-|---|---|---|---|
-| POST | `/api/v1/auth/register` | - | Registrar usuario |
-| POST | `/api/v1/auth/login` | - | Login (email + password) -> JWT |
-| GET | `/api/v1/users/me` | JWT | Perfil del usuario |
-| PATCH | `/api/v1/users/me` | JWT | Actualizar perfil |
-| DELETE | `/api/v1/users/me` | JWT | Eliminar cuenta |
+
+| Metodo | Ruta                    | Auth | Descripcion                     |
+| ------ | ----------------------- | ---- | ------------------------------- |
+| POST   | `/api/v1/auth/register` | -    | Registrar usuario               |
+| POST   | `/api/v1/auth/login`    | -    | Login (email + password) -> JWT |
+| GET    | `/api/v1/users/me`      | JWT  | Perfil del usuario              |
+| PATCH  | `/api/v1/users/me`      | JWT  | Actualizar perfil               |
+| DELETE | `/api/v1/users/me`      | JWT  | Eliminar cuenta                 |
 
 ### Crops
-| Metodo | Ruta | Auth | Descripcion |
-|---|---|---|---|
-| GET | `/api/v1/crops` | JWT | Listar cultivos |
-| POST | `/api/v1/crops` | JWT | Crear cultivo |
-| GET | `/api/v1/crops/{id}` | JWT | Obtener cultivo |
-| PATCH | `/api/v1/crops/{id}` | JWT | Actualizar cultivo |
-| DELETE | `/api/v1/crops/{id}` | JWT | Eliminar cultivo |
+
+| Metodo | Ruta                 | Auth | Descripcion        |
+| ------ | -------------------- | ---- | ------------------ |
+| GET    | `/api/v1/crops`      | JWT  | Listar cultivos    |
+| POST   | `/api/v1/crops`      | JWT  | Crear cultivo      |
+| GET    | `/api/v1/crops/{id}` | JWT  | Obtener cultivo    |
+| PATCH  | `/api/v1/crops/{id}` | JWT  | Actualizar cultivo |
+| DELETE | `/api/v1/crops/{id}` | JWT  | Eliminar cultivo   |
 
 ### Predictions
-| Metodo | Ruta | Auth | Descripcion |
-|---|---|---|---|
-| POST | `/api/v1/predictions` | JWT | Predecir cultivo |
-| GET | `/api/v1/predictions` | JWT | Historial de predicciones |
+
+| Metodo | Ruta                  | Auth | Descripcion               |
+| ------ | --------------------- | ---- | ------------------------- |
+| POST   | `/api/v1/predictions` | JWT  | Predecir cultivo          |
+| GET    | `/api/v1/predictions` | JWT  | Historial de predicciones |
 
 ### Admin (requiere is_admin=True)
-| Metodo | Ruta | Auth | Descripcion |
-|---|---|---|---|
-| GET | `/api/v1/admin/users` | Admin | Listar usuarios con perfiles |
-| POST | `/api/v1/admin/users` | Admin | Crear usuario con perfil y roles |
-| GET | `/api/v1/admin/users/{id}` | Admin | Obtener usuario |
-| PATCH | `/api/v1/admin/users/{id}` | Admin | Actualizar perfil |
-| PATCH | `/api/v1/admin/users/{id}/roles` | Admin | Asignar roles |
-| GET | `/api/v1/admin/roles` | Admin | Listar roles |
-| POST | `/api/v1/admin/roles` | Admin | Crear rol |
-| GET | `/api/v1/admin/roles/{id}` | Admin | Obtener rol |
-| PATCH | `/api/v1/admin/roles/{id}` | Admin | Actualizar rol |
-| DELETE | `/api/v1/admin/roles/{id}` | Admin | Eliminar rol |
-| GET | `/api/v1/admin/menus` | Admin | Arbol de menus con permisos disponibles |
-| GET | `/api/v1/admin/menus/{id}` | Admin | Menu especifico |
-| GET | `/api/v1/admin/permissions` | Admin | Listar permisos |
-| POST | `/api/v1/admin/role-menu-permissions` | Admin | Asignar permiso a rol |
-| GET | `/api/v1/admin/role-menu-permissions/{role_id}` | Admin | Permisos de un rol |
-| DELETE | `/api/v1/admin/role-menu-permissions/{rmp_id}` | Admin | Remover permiso |
+
+| Metodo | Ruta                                            | Auth  | Descripcion                             |
+| ------ | ----------------------------------------------- | ----- | --------------------------------------- |
+| GET    | `/api/v1/admin/users`                           | Admin | Listar usuarios con perfiles            |
+| POST   | `/api/v1/admin/users`                           | Admin | Crear usuario con perfil y roles        |
+| GET    | `/api/v1/admin/users/{id}`                      | Admin | Obtener usuario                         |
+| PATCH  | `/api/v1/admin/users/{id}`                      | Admin | Actualizar perfil                       |
+| PATCH  | `/api/v1/admin/users/{id}/roles`                | Admin | Asignar roles                           |
+| GET    | `/api/v1/admin/roles`                           | Admin | Listar roles                            |
+| POST   | `/api/v1/admin/roles`                           | Admin | Crear rol                               |
+| GET    | `/api/v1/admin/roles/{id}`                      | Admin | Obtener rol                             |
+| PATCH  | `/api/v1/admin/roles/{id}`                      | Admin | Actualizar rol                          |
+| DELETE | `/api/v1/admin/roles/{id}`                      | Admin | Eliminar rol                            |
+| GET    | `/api/v1/admin/menus`                           | Admin | Arbol de menus con permisos disponibles |
+| GET    | `/api/v1/admin/menus/{id}`                      | Admin | Menu especifico                         |
+| GET    | `/api/v1/admin/permissions`                     | Admin | Listar permisos                         |
+| POST   | `/api/v1/admin/role-menu-permissions`           | Admin | Asignar permiso a rol                   |
+| GET    | `/api/v1/admin/role-menu-permissions/{role_id}` | Admin | Permisos de un rol                      |
+| DELETE | `/api/v1/admin/role-menu-permissions/{rmp_id}`  | Admin | Remover permiso                         |
 
 Documentacion interactiva: `http://localhost:8150/docs`
 
@@ -422,10 +435,156 @@ Documentacion interactiva: `http://localhost:8150/docs`
 - Modelo entrenado en `app/infrastructure/ml/artifacts/crop_model.joblib`.
 
 Reentrenar con datos propios:
+
 ```bash
 # Coloca tu dataset en data/crop_data.csv
 # Columnas: N,P,K,temperature,humidity,ph,rainfall,label
 python -m app.infrastructure.ml.train
+```
+
+## Versionamiento del Modelo (SemVer)
+
+El proyecto implementa versionado semantico automatico para el modelo de prediccion de rendimiento (`prediccion-rendimiento`).
+
+### Reglas de versionado
+
+| Nivel | Cuando aplicar | Ejemplo |
+|-------|----------------|---------|
+| **PATCH** (1.0.2 → 1.0.3) | Reentrenamiento con datos nuevos, misma arquitectura, features e hiperparámetros. **Por defecto.** | Se agregan registros nuevos de entrenamiento |
+| **MINOR** (1.0.3 → 1.1.0) | Cambian features o hiperparámetros de forma relevante; el esquema de entrada sigue compatible. Resetea PATCH a 0. | Se agrega feature `ndvi`, se cambia `n_estimators` |
+| **MAJOR** (1.1.0 → 2.0.0) | Cambia el algoritmo, el target o el esquema de entrada. Resetea MINOR y PATCH a 0. | Se cambia de RandomForest a XGBoost, o se predice otra variable |
+
+### Flujo de entrenamiento con versionado
+
+```
+POST /api/v1/general/trained-models/train?bump_level=patch|minor|major
+    │
+    ├─► Entrena RandomForest + LinearRegression con split temporal (últimos 6 meses test)
+    │
+    ├─► Evalúa ambos en test set → candidatos_evaluados JSON
+    │
+    ├─► Selecciona ganador (mejor RMSE con tolerancia 1%)
+    │
+    ├─► Compara ganador vs modelo en PRODUCCIÓN (baseline)
+    │       │
+    │       ├─► SI supera: bump_version(patch|minor|major)
+    │       │       ├─► Guarda artefactos en modelos/{version}/
+    │       │       ├─► INSERT modelo_version (estado='candidato')
+    │       │       ├─► INSERT modelo_runs (genero_version=true)
+    │       │       └─► Retorna versión candidata
+    │       │
+    │       └─► NO supera:
+    │           ├─► INSERT modelo_runs (genero_version=false, motivo='no_supero_baseline')
+    │           └─► Retorna run sin versión nueva
+    │
+    ▼
+POST /api/v1/general/trained-models/promote {version_id}
+    │
+    ├─► Valida: ningún algoritmo empeora vs producción actual (>5% tolerancia)
+    │
+    ├─► TX: UPDATE estado='archivado' WHERE estado='produccion'
+    │
+    ├─► TX: UPDATE estado='produccion' WHERE id={version_id}
+    │
+    └─► Git tag opcional: model-v{version}
+```
+
+### Endpoints de versionado
+
+| Metodo | Ruta | Descripcion |
+|--------|------|-------------|
+| POST | `/api/v1/general/trained-models/train` | Entrenar con bump_level (patch/minor/major) |
+| POST | `/api/v1/general/trained-models/train-async` | Entrenamiento asíncrono con bump_level |
+| GET | `/api/v1/general/trained-models/versions` | Listar todas las versiones del modelo |
+| GET | `/api/v1/general/trained-models/versions/{id}` | Obtener versión específica |
+| GET | `/api/v1/general/trained-models/runs` | Listar runs de entrenamiento |
+| POST | `/api/v1/general/trained-models/promote` | Promover candidato a producción |
+| POST | `/api/v1/general/trained-models/rollback` | Rollback a versión anterior |
+| GET | `/api/v1/general/trained-models/production` | Obtener modelo actual en producción |
+
+### Ejemplo de uso
+
+```bash
+# Entrenar con bump PATCH (por defecto)
+curl -X POST http://localhost:8150/api/v1/general/trained-models/train \
+  -H "Authorization: Bearer <token>" \
+  -H "Content-Type: application/json" \
+  -d '{"algorithms":["random_forest","linear_regression"],"bump_level":"patch"}'
+
+# Entrenar con bump MINOR
+curl -X POST http://localhost:8150/api/v1/general/trained-models/train \
+  -H "Authorization: Bearer <token>" \
+  -H "Content-Type: application/json" \
+  -d '{"algorithms":["random_forest","linear_regression"],"bump_level":"minor"}'
+
+# Promover versión candidata a producción
+curl -X POST http://localhost:8150/api/v1/general/trained-models/promote \
+  -H "Authorization: Bearer <token>" \
+  -H "Content-Type: application/json" \
+  -d '{"versionId": 5}'
+
+# Rollback a versión anterior
+curl -X POST http://localhost:8150/api/v1/general/trained-models/rollback \
+  -H "Authorization: Bearer <token>" \
+  -H "Content-Type: application/json" \
+  -d '{"versionId": 3}'
+
+# Ver modelo actual en producción
+curl http://localhost:8150/api/v1/general/trained-models/production \
+  -H "Authorization: Bearer <token>"
+```
+
+### Tablas en BD
+
+| Tabla | Descripcion |
+|-------|-------------|
+| `core.modelo_version` | Versiones registradas del modelo (candidato/produccion/archivado) |
+| `core.modelo_runs` | Historial de todos los entrenamientos (incluye los que no generaron versión) |
+| `core.predictions` | Predicciones con FK `modelo_version_id` para trazabilidad |
+
+### Configuración (`app/infrastructure/config/model_config.yaml`)
+
+```yaml
+model:
+  name: "prediccion-rendimiento"
+  algorithms:
+    - "random_forest"
+    - "linear_regression"
+  promotion_metric: "rmse"
+  promotion_tolerance: 0.01
+  random_seed: 42
+
+training:
+  test_window_months: 6
+  min_train_records: 50
+  temporal_split_column: "created_at"
+
+artifacts:
+  base_path: "app/infrastructure/ml/artifacts/modelos"
+  include_version_in_path: true
+```
+
+### Ejemplo de registro en BD (`modelo_version`)
+
+```json
+{
+  "modelo": "prediccion-rendimiento",
+  "version": "1.3.0",
+  "estado": "candidato",
+  "entrenado_en": "2026-09-15T10:30:00",
+  "git_commit": "a1b2c3d",
+  "data_version": "datos_v2026-09-15",
+  "data_desde": "2018-01-01",
+  "data_hasta": "2026-08-31",
+  "features": ["temperatura", "precipitacion", "ndvi", "tipo_suelo"],
+  "candidatos_evaluados": {
+    "random_forest": {"rmse": 0.42, "mae": 0.31, "artefacto": "modelos/1.3.0/random_forest.joblib"},
+    "linear_regression": {"rmse": 0.55, "mae": 0.44, "artefacto": "modelos/1.3.0/linear_regression.joblib"}
+  },
+  "metricas": {"rmse": 0.42, "mae": 0.31, "r2": 0.85},
+  "baseline_compared": "1.2.1",
+  "ruta_artefacto": "modelos/1.3.0/"
+}
 ```
 
 ## Conexion a la base de datos

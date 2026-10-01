@@ -5,7 +5,7 @@ services:
       - .env.prod
     environment:
       - DEBUG=false
-      - ACCESS_TOKEN_EXPIRE_MINUTES=30
+      - ACCESS_TOKEN_EXPIRE_MINUTES=360
     ports:
       - "8150:8000"
     restart: always

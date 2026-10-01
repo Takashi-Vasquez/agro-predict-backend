@@ -11,6 +11,7 @@ from app.infrastructure.database.session import _get_engine
 from app.presentation.api.v1.router import router
 from app.presentation.utils.exception_middleware import ExceptionMiddleware
 from app.presentation.api.tags import get_tags
+from app.infrastructure.scheduler.weather_scheduler import start_scheduler, stop_scheduler
 
 
 @asynccontextmanager
@@ -24,8 +25,10 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         conn.execute(text("CREATE SCHEMA IF NOT EXISTS monitoring"))
         conn.commit()
     Base.metadata.create_all(bind=engine)
+    start_scheduler()
     print(f"\n  API disponible en http://localhost:8150/docs\n")
     yield
+    stop_scheduler()
 
 
 def create_app() -> FastAPI:

@@ -14,6 +14,7 @@ from sqlalchemy import select
 from app.infrastructure.config.security import hash_password
 from app.infrastructure.database.session import _get_session_factory
 from app.infrastructure.orm.operations.crop import Crop
+from app.infrastructure.orm.general.training_field import TrainingField
 from app.infrastructure.orm.security.menu import Menu
 from app.infrastructure.orm.security.menu_permission import MenuPermission
 from app.infrastructure.orm.security.permission import Permission
@@ -49,12 +50,30 @@ MENUS_DATA = [
                 "menu_permissions": ["READ"],
             },
             {
+                "code": "GENERAL_PANEL.CAMPAIGNS",
+                "name": "Campañas",
+                "route": "/panel-general/campanas",
+                "icon": "calendar",
+                "order_index": 2,
+                "badge": None,
+                "menu_permissions": ["CREATE", "READ", "UPDATE", "DELETE"],
+            },
+            {
                 "code": "GENERAL_PANEL.PREDICTIONS",
                 "name": "Predicciones",
                 "route": "/panel-general/predicciones",
                 "icon": "sparkles",
-                "order_index": 2,
+                "order_index": 3,
                 "badge": "IA",
+                "menu_permissions": ["CREATE", "READ", "UPDATE", "DELETE"],
+            },
+            {
+                "code": "GENERAL_PANEL.TRAINING_RECORDS",
+                "name": "Datos históricos",
+                "route": "/panel-general/datos-historicos",
+                "icon": "sparkles",
+                "order_index": 4,
+                "badge": None,
                 "menu_permissions": ["CREATE", "READ", "UPDATE", "DELETE"],
             },
         ],
@@ -257,7 +276,9 @@ def seed() -> None:
             menu_created, menu_skipped = _seed_menu_tree(db, menu_data, None, menu_created, menu_skipped, now)
 
         _create_admin(db)
+        _create_varieties(db)
         _create_crops(db)
+        _create_training_fields(db)
 
         db.commit()
         print(f"  Creados: {menu_created}, Ya existian: {menu_skipped}")
@@ -414,7 +435,26 @@ CROPS_DATA = [
     },
 ]
 
+VARIETIES_DATA = ["Hass", "Biloxi", "Fuerte", "Zutano", "Hass 816", "Lula", "Eda Derezo"]
+
+def _create_varieties(db) -> None:
+    from app.infrastructure.orm.operations.variety import Variety as VarietyModel
+
+    varieties_created = 0
+    varieties_skipped = 0
+    for name in VARIETIES_DATA:
+        existing = db.scalar(select(VarietyModel).where(VarietyModel.name == name))
+        if existing:
+            varieties_skipped += 1
+        else:
+            db.add(VarietyModel(name=name))
+            varieties_created += 1
+    db.commit()
+    print(f"  Variedades creadas: {varieties_created}, Ya existían: {varieties_skipped}")
+
 def _create_crops(db) -> None:
+    from app.infrastructure.orm.operations.variety import Variety as VarietyModel
+
     admin_email = "admin@tesis.com"
     admin = db.scalar(select(User).where(User.email == admin_email))
     if not admin:
@@ -428,10 +468,14 @@ def _create_crops(db) -> None:
         if existing:
             crops_skipped += 1
         else:
+            variety = db.scalar(select(VarietyModel).where(VarietyModel.name == c["variety"]))
+            if not variety:
+                print(f"  Variedad no encontrada: {c['variety']}, saltando crop {c['name']}")
+                continue
             db.add(Crop(
                 owner_id=admin.id,
                 name=c["name"],
-                variety=c["variety"],
+                variety_id=variety.id,
                 category=c["category"],
                 cycle=c["cycle"],
                 temperature=c["temperature"],
@@ -441,6 +485,182 @@ def _create_crops(db) -> None:
             crops_created += 1
     db.commit()
     print(f"  Crops creados: {crops_created}, Ya existían: {crops_skipped}")
+
+TRAINING_FIELDS_DATA = TRAINING_FIELDS_DATA = [
+    {
+        "field_key": "crop",
+        "label": "Cultivo",
+        "field_type": "text",
+        "category": "crop",
+        "unit": None,
+        "min_value": None,
+        "max_value": None,
+        "options": None,
+        "is_required": True,
+        "order_index": 1,
+    },
+    {
+        "field_key": "variety",
+        "label": "Variedad",
+        "field_type": "select",
+        "category": "crop",
+        "unit": None,
+        "min_value": None,
+        "max_value": None,
+        "options": ["Hass", "Fuerte", "Zutano", "Hass 816"],
+        "is_required": False,
+        "order_index": 2,
+    },
+    {
+        "field_key": "campaign",
+        "label": "Campaña",
+        "field_type": "text",
+        "category": "metadata",
+        "unit": None,
+        "min_value": None,
+        "max_value": None,
+        "options": None,
+        "is_required": True,
+        "order_index": 3,
+    },
+    {
+        "field_key": "soil_type",
+        "label": "Tipo de suelo",
+        "field_type": "select",
+        "category": "soil",
+        "unit": None,
+        "min_value": None,
+        "max_value": None,
+        "options": ["Arcilloso", "Arenoso", "Limoso", "Franco", "Franco arcilloso", "Franco limoso"],
+        "is_required": False,
+        "order_index": 4,
+    },
+    {
+        "field_key": "temperature",
+        "label": "Temperatura (°C)",
+        "field_type": "number",
+        "category": "climate",
+        "unit": "°C",
+        "min_value": -5,
+        "max_value": 50,
+        "options": None,
+        "is_required": True,
+        "order_index": 5,
+    },
+    {
+        "field_key": "humidity",
+        "label": "Humedad del suelo (%)",
+        "field_type": "number",
+        "category": "soil",
+        "unit": "%",
+        "min_value": 0,
+        "max_value": 100,
+        "options": None,
+        "is_required": True,
+        "order_index": 6,
+    },
+    {
+        "field_key": "ph_soil",
+        "label": "pH del suelo",
+        "field_type": "number",
+        "category": "soil",
+        "unit": None,
+        "min_value": 2.5,
+        "max_value": 11,
+        "options": None,
+        "is_required": True,
+        "order_index": 7,
+    },
+    {
+        "field_key": "nitrogen",
+        "label": "Nitrógeno (kg/ha)",
+        "field_type": "number",
+        "category": "soil",
+        "unit": "kg/ha",
+        "min_value": 0,
+        "max_value": 600,
+        "options": None,
+        "is_required": True,
+        "order_index": 8,
+    },
+    {
+        "field_key": "phosphorus",
+        "label": "Fósforo (kg/ha)",
+        "field_type": "number",
+        "category": "soil",
+        "unit": "kg/ha",
+        "min_value": 0,
+        "max_value": 300,
+        "options": None,
+        "is_required": True,
+        "order_index": 9,
+    },
+    {
+        "field_key": "potassium",
+        "label": "Potasio (kg/ha)",
+        "field_type": "number",
+        "category": "soil",
+        "unit": "kg/ha",
+        "min_value": 0,
+        "max_value": 700,
+        "options": None,
+        "is_required": True,
+        "order_index": 10,
+    },
+    {
+        "field_key": "rainfall",
+        "label": "Precipitación (mm)",
+        "field_type": "number",
+        "category": "climate",
+        "unit": "mm",
+        "min_value": 0,
+        "max_value": 3500,
+        "options": None,
+        "is_required": True,
+        "order_index": 11,
+    },
+    {
+        "field_key": "irrigation_type",
+        "label": "Tipo de riego",
+        "field_type": "select",
+        "category": "management",
+        "unit": None,
+        "min_value": None,
+        "max_value": None,
+        "options": ["Goteo", "Aspersión", "Gravedad", "Sin riego"],
+        "is_required": False,
+        "order_index": 12,
+    },
+    {
+        "field_key": "target_yield",
+        "label": "Rendimiento real (t/ha)",
+        "field_type": "number",
+        "category": "target",
+        "unit": "t/ha",
+        "min_value": 0,
+        "max_value": 250,
+        "options": None,
+        "is_required": True,
+        "order_index": 13,
+    },
+]
+
+
+def _create_training_fields(db) -> None:
+    fields_created = 0
+    fields_updated = 0
+    for f in TRAINING_FIELDS_DATA:
+        existing = db.scalar(select(TrainingField).where(TrainingField.field_key == f["field_key"]))
+        if existing:
+            for key, value in f.items():
+                setattr(existing, key, value)
+            fields_updated += 1
+        else:
+            db.add(TrainingField(**f))
+            fields_created += 1
+    db.commit()
+    print(f"  Training fields creados: {fields_created}, Actualizados: {fields_updated}")
+
 
 def _drift_detection(db, code_menu_codes: set[str]) -> None:
     print("\n--- Drift Detection ---")

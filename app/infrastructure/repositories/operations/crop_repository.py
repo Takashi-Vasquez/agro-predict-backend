@@ -13,53 +13,22 @@ class CropRepositoryImpl(CropRepository):
         self.db = db
 
     def get(self, crop_id: int) -> Crop | None:
-        stmt = select(CropModel).where(
-            CropModel.id == crop_id,
-            CropModel.status != "DELETED",
-        )
+        stmt = select(CropModel).where(CropModel.id == crop_id, CropModel.status != "DELETED")
         orm = self.db.scalar(stmt)
         return self._to_entity(orm) if orm else None
 
-    def get_owned(self, owner_id: int, crop_id: int) -> Crop | None:
-        stmt = select(CropModel).where(
-            CropModel.id == crop_id,
-            CropModel.owner_id == owner_id,
-            CropModel.status != "DELETED",
-        )
-        orm = self.db.scalar(stmt)
-        return self._to_entity(orm) if orm else None
-
-    def list_for_owner(self, owner_id: int, *, offset: int = 0, limit: int = 100) -> list[Crop]:
+    def list_all(self, *, offset: int = 0, limit: int = 100) -> list[Crop]:
         stmt = (
             select(CropModel)
-            .where(CropModel.owner_id == owner_id, CropModel.status != "DELETED")
+            .where(CropModel.status != "DELETED")
             .order_by(CropModel.id)
-            .offset(offset)
-            .limit(limit)
+            .offset(offset).limit(limit)
         )
         return [self._to_entity(o) for o in self.db.scalars(stmt).all()]
 
-    def create(
-        self,
-        owner_id: int,
-        name: str,
-        variety: str,
-        category: str,
-        cycle: int,
-        temperature: str,
-        water: str,
-        color: str,
-    ) -> Crop:
-        orm = CropModel(
-            owner_id=owner_id,
-            name=name,
-            variety=variety,
-            category=category,
-            cycle=cycle,
-            temperature=temperature,
-            water=water,
-            color=color,
-        )
+    def create(self, owner_id, name, variety_id, category, cycle, temperature, water, color) -> Crop:
+        orm = CropModel(owner_id=owner_id, name=name, variety_id=variety_id, category=category,
+                        cycle=cycle, temperature=temperature, water=water, color=color)
         self.db.add(orm)
         self.db.commit()
         self.db.refresh(orm)
@@ -82,17 +51,10 @@ class CropRepositoryImpl(CropRepository):
     @staticmethod
     def _to_entity(orm: CropModel) -> Crop:
         return Crop(
-            id=orm.id,
-            owner_id=orm.owner_id,
-            name=orm.name,
-            variety=orm.variety,
-            category=orm.category,
-            cycle=orm.cycle,
-            temperature=orm.temperature,
-            water=orm.water,
-            color=orm.color,
-            status=orm.status,
-            created_at=orm.created_at,
-            updated_at=orm.updated_at,
-            deleted_at=orm.deleted_at,
+            id=orm.id, owner_id=orm.owner_id, name=orm.name,
+            variety_id=orm.variety_id,
+            variety=orm.variety.name if orm.variety else "",
+            category=orm.category, cycle=orm.cycle, temperature=orm.temperature,
+            water=orm.water, color=orm.color, status=orm.status,
+            created_at=orm.created_at, updated_at=orm.updated_at, deleted_at=orm.deleted_at,
         )

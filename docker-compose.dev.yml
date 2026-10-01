@@ -5,7 +5,7 @@ services:
       - .env.dev
     environment:
       - DEBUG=true
-      - ACCESS_TOKEN_EXPIRE_MINUTES=60
+      - ACCESS_TOKEN_EXPIRE_MINUTES=480
       - API_PORT=8150
     ports:
       - "8150:8000"

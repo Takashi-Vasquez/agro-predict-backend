@@ -5,10 +5,16 @@ from app.presentation.utils.api_response_factory import ApiResponseFactory
 from app.infrastructure.config.settings import get_settings
 from app.infrastructure.ml.model import CropPredictor
 from app.infrastructure.repositories.general.prediction_repository import PredictionRepositoryImpl
-from app.presentation.schemas.general.predictions.prediction import PredictionInput, PredictionRead
+from app.infrastructure.repositories.general.trained_model_repository import TrainedModelRepositoryImpl
+from app.presentation.schemas.general.predictions.prediction import (
+    PredictionInput,
+    PredictionRead,
+    YieldPredictionResponse,
+)
 from app.domain.exceptions import AppException
 from app.domain.use_cases.general.predictions.predict import PredictUseCase
 from app.domain.use_cases.general.predictions.list_predictions import ListPredictionsUseCase
+from app.domain.use_cases.general.predictions.predict_yield import PredictYieldUseCase
 
 router = APIRouter(prefix="/operations/predictions", tags=["Operations/Predictions"])
 
@@ -42,6 +48,25 @@ def predict(payload: PredictionInput, user: CurrentUser, db: DbDep):
     return ApiResponseFactory.created(data, "Prediccion generada correctamente")
 
 
+@router.post("/yield")
+def predict_yield(payload: PredictionInput, user: CurrentUser, db: DbDep):
+    settings = get_settings()
+    prediction_repo = PredictionRepositoryImpl(db)
+    model_repo = TrainedModelRepositoryImpl(db)
+    use_case = PredictYieldUseCase(prediction_repo, model_repo, settings.ML_MODEL_PATH.parent)
+
+    try:
+        data = use_case.execute(
+            user_id=user.id,
+            data=payload.model_dump(),
+            crop_id=payload.crop_id,
+        )
+    except ValueError as exc:
+        raise AppException.bad_request(str(exc))
+
+    return ApiResponseFactory.created(data, "Prediccion de rendimiento generada")
+
+
 @router.get("")
 def list_predictions(
     user: CurrentUser,
@@ -49,6 +74,6 @@ def list_predictions(
     offset: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=1000),
 ):
-    rows = ListPredictionsUseCase(PredictionRepositoryImpl(db)).execute(user.id, offset=offset, limit=limit)
+    rows = ListPredictionsUseCase(PredictionRepositoryImpl(db)).execute(offset=offset, limit=limit)
     data = [PredictionRead.model_validate(r).model_dump() for r in rows]
     return ApiResponseFactory.ok(data, "Predicciones obtenidas correctamente")

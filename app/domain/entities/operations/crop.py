@@ -7,6 +7,7 @@ class Crop:
     id: int = 0
     owner_id: int = 0
     name: str = ""
+    variety_id: int = 0
     variety: str = ""
     category: str = ""
     cycle: int = 0

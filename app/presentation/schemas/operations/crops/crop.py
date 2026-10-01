@@ -7,7 +7,7 @@ from app.presentation.schemas import BaseReadSchema
 
 class CropBase(BaseModel):
     name: str = Field(min_length=1, max_length=255)
-    variety: str = Field(min_length=1, max_length=100)
+    variety_id: int = Field(alias="varietyId", description="ID de la variedad")
     category: str = Field(min_length=1, max_length=100)
     cycle: int = Field(ge=0)
     temperature: str = Field(min_length=1, max_length=50)
@@ -21,7 +21,7 @@ class CropCreate(CropBase):
 
 class CropUpdate(BaseModel):
     name: str | None = Field(default=None, min_length=1, max_length=255)
-    variety: str | None = Field(default=None, min_length=1, max_length=100)
+    variety_id: int | None = Field(default=None, alias="varietyId")
     category: str | None = Field(default=None, min_length=1, max_length=100)
     cycle: int | None = Field(default=None, ge=0)
     temperature: str | None = Field(default=None, min_length=1, max_length=50)
@@ -34,6 +34,7 @@ class CropRead(CropBase, BaseReadSchema):
 
     id: int = Field(alias="id")
     owner_id: int = Field(alias="ownerId")
+    variety: str = Field(alias="variety")
     status: str
     created_at: datetime
     updated_at: datetime

@@ -9,13 +9,18 @@ class Prediction:
     crop_id: int | None = None
     predicted_crop: str = ""
     probability: float = 0.0
-    N: float = 0.0
-    P: float = 0.0
-    K: float = 0.0
+    nitrogen: float = 0.0
+    phosphorus: float = 0.0
+    potassium: float = 0.0
     temperature: float = 0.0
     humidity: float = 0.0
-    ph: float = 0.0
+    ph_soil: float = 0.0
     rainfall: float = 0.0
+    predicted_yield: float | None = None
+    target_yield: float | None = None
+    gap: float | None = None
+    model_id: int | None = None
+    model_algorithm: str | None = None
     error_message: str | None = None
     status: str = "ACTIVE"
     created_at: datetime = field(default_factory=datetime.utcnow)

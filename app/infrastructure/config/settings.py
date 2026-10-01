@@ -22,20 +22,24 @@ class Settings(BaseSettings):
     DATABASE_URL: str = ""
     SECRET_KEY: str = "change-me-in-production"
     ALGORITHM: str = "HS256"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 480
 
     ML_MODEL_PATH: Path = BASE_DIR / "app" / "infrastructure" / "ml" / "artifacts" / "crop_model.joblib"
     ML_FEATURES: list[str] = [
-        "N",
-        "P",
-        "K",
+        "nitrogen",
+        "phosphorus",
+        "potassium",
         "temperature",
         "humidity",
-        "ph",
+        "ph_soil",
         "rainfall",
     ]
 
     CORS_ORIGINS: list[str] = ["http://localhost:3000", "http://localhost:5173"]
+
+    WEATHER_LAT: float = -8.1116
+    WEATHER_LON: float = -79.0288
+    WEATHER_LOCATION: str = "Trujillo, La Libertad, Peru"
 
 
 @lru_cache

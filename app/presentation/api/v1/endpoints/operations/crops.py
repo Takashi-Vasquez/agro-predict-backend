@@ -14,14 +14,9 @@ router = APIRouter(prefix="/operations/crops", tags=["Operations/Crops"])
 
 
 @router.get("")
-def list_crops(
-    user: CurrentUser,
-    db: DbDep,
-    offset: int = Query(0, ge=0),
-    limit: int = Query(100, ge=1, le=1000),
-):
+def list_crops(user: CurrentUser, db: DbDep, offset: int = Query(0, ge=0), limit: int = Query(100, ge=1, le=1000)):
     crop_repo = CropRepositoryImpl(db)
-    crops = ListCropsUseCase(crop_repo).execute(user.id, offset=offset, limit=limit)
+    crops = ListCropsUseCase(crop_repo).execute(offset=offset, limit=limit)
     data = [CropRead.model_validate(c).model_dump() for c in crops]
     return ApiResponseFactory.ok(data, "Cultivos obtenidos correctamente")
 
@@ -29,14 +24,9 @@ def list_crops(
 @router.post("")
 def create_crop(payload: CropCreate, user: CurrentUser, db: DbDep):
     crop = CreateCropUseCase(CropRepositoryImpl(db)).execute(
-        owner_id=user.id,
-        name=payload.name,
-        variety=payload.variety,
-        category=payload.category,
-        cycle=payload.cycle,
-        temperature=payload.temperature,
-        water=payload.water,
-        color=payload.color,
+        owner_id=user.id, name=payload.name, variety_id=payload.variety_id,
+        category=payload.category, cycle=payload.cycle,
+        temperature=payload.temperature, water=payload.water, color=payload.color,
     )
     data = CropRead.model_validate(crop).model_dump()
     return ApiResponseFactory.created(data, "Cultivo creado correctamente")
@@ -44,7 +34,7 @@ def create_crop(payload: CropCreate, user: CurrentUser, db: DbDep):
 
 @router.get("/{crop_id}")
 def get_crop(crop_id: int, user: CurrentUser, db: DbDep):
-    crop = CropRepositoryImpl(db).get_owned(user.id, crop_id)
+    crop = CropRepositoryImpl(db).get(crop_id)
     if crop is None:
         raise AppException.not_found("Cultivo no encontrado")
     data = CropRead.model_validate(crop).model_dump()
@@ -54,7 +44,7 @@ def get_crop(crop_id: int, user: CurrentUser, db: DbDep):
 @router.patch("/{crop_id}")
 def update_crop(crop_id: int, payload: CropUpdate, user: CurrentUser, db: DbDep):
     crop = UpdateCropUseCase(CropRepositoryImpl(db)).execute(
-        user.id, crop_id, **payload.model_dump(exclude_unset=True)
+        crop_id, **payload.model_dump(exclude_unset=True)
     )
     data = CropRead.model_validate(crop).model_dump()
     return ApiResponseFactory.ok(data, "Cultivo actualizado correctamente")
@@ -62,5 +52,5 @@ def update_crop(crop_id: int, payload: CropUpdate, user: CurrentUser, db: DbDep)
 
 @router.delete("/{crop_id}")
 def delete_crop(crop_id: int, user: CurrentUser, db: DbDep):
-    DeleteCropUseCase(CropRepositoryImpl(db)).execute(user.id, crop_id)
+    DeleteCropUseCase(CropRepositoryImpl(db)).execute(crop_id)
     return ApiResponseFactory.no_content("Cultivo eliminado correctamente")

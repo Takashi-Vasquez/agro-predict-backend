@@ -23,14 +23,8 @@ from app.domain.use_cases.security.permissions.sync_role_permissions import Sync
 router = APIRouter(prefix="/security/profile", tags=["Security/Permissions"])
 
 
-def _require_admin(user: CurrentUser) -> None:
-    if not user.is_admin:
-        raise AppException.forbidden("Se requieren permisos de administrador")
-
-
 @router.get("/menus")
 def list_menus(user: CurrentUser, db: DbDep):
-    _require_admin(user)
     menu_repo = MenuRepositoryImpl(db)
     mp_repo = MenuPermissionRepositoryImpl(db)
     roots = menu_repo.get_root_menus()
@@ -40,7 +34,6 @@ def list_menus(user: CurrentUser, db: DbDep):
 
 @router.get("/permissions")
 def list_permissions(user: CurrentUser, db: DbDep):
-    _require_admin(user)
     perms = PermissionRepositoryImpl(db).get_all()
     data = [PermissionRead.model_validate(p).model_dump() for p in perms]
     return ApiResponseFactory.ok(data, "Permisos obtenidos correctamente")
@@ -52,7 +45,6 @@ def assign_permission(
     user: CurrentUser,
     db: DbDep,
 ):
-    _require_admin(user)
     use_case = AssignPermissionUseCase(
         rmp_repo=RoleMenuPermissionRepositoryImpl(db),
         role_repo=RoleRepositoryImpl(db),
@@ -74,7 +66,6 @@ def sync_role_permissions(
     user: CurrentUser,
     db: DbDep,
 ):
-    _require_admin(user)
     use_case = SyncRolePermissionsUseCase(
         rmp_repo=RoleMenuPermissionRepositoryImpl(db),
         role_repo=RoleRepositoryImpl(db),
@@ -90,7 +81,6 @@ def sync_role_permissions(
 
 @router.get("/role-permissions/{role_id}")
 def list_role_permissions(role_id: int, user: CurrentUser, db: DbDep):
-    _require_admin(user)
     rmps = ListRolePermissionsUseCase(RoleMenuPermissionRepositoryImpl(db)).execute(role_id)
     data = [RoleMenuPermissionRead.model_validate(r).model_dump() for r in rmps]
     return ApiResponseFactory.ok(data, "Permisos del rol obtenidos correctamente")
@@ -98,7 +88,6 @@ def list_role_permissions(role_id: int, user: CurrentUser, db: DbDep):
 
 @router.delete("/role-permissions/{rmp_id}")
 def remove_permission(rmp_id: int, user: CurrentUser, db: DbDep):
-    _require_admin(user)
     try:
         RemovePermissionUseCase(RoleMenuPermissionRepositoryImpl(db)).execute(rmp_id)
     except ValueError as exc:

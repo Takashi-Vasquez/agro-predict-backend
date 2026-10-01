@@ -21,14 +21,8 @@ from app.infrastructure.orm.security.user_role import UserRole as UserRoleModel
 router = APIRouter(prefix="/security/users", tags=["Security/Users"])
 
 
-def _require_admin(user: CurrentUser) -> None:
-    if not user.is_admin:
-        raise AppException.forbidden("Se requieren permisos de administrador")
-
-
 @router.get("")
 def list_users(user: CurrentUser, db: DbDep):
-    _require_admin(user)
     user_repo = UserRepositoryImpl(db)
     use_case = ListUsersUseCase(user_repo)
     users = use_case.execute()
@@ -38,7 +32,6 @@ def list_users(user: CurrentUser, db: DbDep):
 
 @router.post("")
 def create_user(data: UserWithProfileCreate, user: CurrentUser, db: DbDep):
-    _require_admin(user)
     user_repo = UserRepositoryImpl(db)
     use_case = CreateUserUseCase(user_repo)
     try:
@@ -69,7 +62,6 @@ def create_user(data: UserWithProfileCreate, user: CurrentUser, db: DbDep):
 
 @router.get("/{user_id}")
 def get_user(user_id: int, user: CurrentUser, db: DbDep):
-    _require_admin(user)
     user_repo = UserRepositoryImpl(db)
     target = user_repo.get(user_id)
     if not target:
@@ -85,7 +77,6 @@ def update_user(
     user: CurrentUser,
     db: DbDep,
 ):
-    _require_admin(user)
     target = UserRepositoryImpl(db).get(user_id)
     if not target:
         raise AppException.not_found("Usuario no encontrado")
@@ -105,7 +96,6 @@ def update_user(
 
 @router.delete("/{user_id}")
 def delete_user(user_id: int, user: CurrentUser, db: DbDep):
-    _require_admin(user)
     target = UserRepositoryImpl(db).get(user_id)
     if not target:
         raise AppException.not_found("Usuario no encontrado")

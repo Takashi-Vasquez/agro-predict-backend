@@ -1,14 +1,20 @@
 from abc import ABC, abstractmethod
+from datetime import datetime
 
-from app.domain.entities.monitoring.weather import Weather
+from app.domain.entities.monitoring.weather import WeatherReading
 
 
-class WeatherRepository(ABC):
+class WeatherReadingRepository(ABC):
     @abstractmethod
-    def get(self, weather_id: int) -> Weather | None: ...
-
-    @abstractmethod
-    def list_for_crop(self, crop_id: int, *, offset: int = 0, limit: int = 100) -> list[Weather]: ...
+    def get(self, reading_id: int) -> WeatherReading | None: ...
 
     @abstractmethod
-    def create(self, **kwargs) -> Weather: ...
+    def get_latest(self, location: str) -> WeatherReading | None: ...
+
+    @abstractmethod
+    def get_by_date_range(
+        self, location: str, start: datetime, end: datetime
+    ) -> list[WeatherReading]: ...
+
+    @abstractmethod
+    def create(self, **kwargs) -> WeatherReading: ...

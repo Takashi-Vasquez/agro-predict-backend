@@ -26,7 +26,7 @@ def _get_engine():
             @event.listens_for(_engine, "connect")
             def set_search_path(dbapi_conn, connection_record):
                 cursor = dbapi_conn.cursor()
-                cursor.execute("SET search_path TO security, core, public")
+                cursor.execute("SET search_path TO security, core, operations, monitoring, public")
                 cursor.close()
     return _engine
 

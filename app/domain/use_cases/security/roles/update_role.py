@@ -10,4 +10,8 @@ class UpdateRoleUseCase:
         role = self.role_repo.get(role_id)
         if not role:
             raise ValueError("Rol no encontrado")
+        existing = self.role_repo.get_by_name(kwargs["name"])
+
+        if existing and existing.id != role_id:
+            raise ValueError("Ya existe un rol con ese nombre")
         return self.role_repo.update(role, **kwargs)

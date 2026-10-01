@@ -10,7 +10,7 @@ class CreateCropUseCase:
         self,
         owner_id: int,
         name: str,
-        variety: str,
+        variety_id: int,
         category: str,
         cycle: int,
         temperature: str,
@@ -20,7 +20,7 @@ class CreateCropUseCase:
         return self.crop_repo.create(
             owner_id=owner_id,
             name=name,
-            variety=variety,
+            variety_id=variety_id,
             category=category,
             cycle=cycle,
             temperature=temperature,

@@ -1,3 +1,3 @@
-from app.domain.entities.monitoring.weather import Weather
+from app.domain.entities.monitoring.weather import WeatherReading
 
-__all__ = ["Weather"]
+__all__ = ["WeatherReading"]

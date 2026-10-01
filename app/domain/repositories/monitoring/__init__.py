@@ -1,3 +1,3 @@
-from app.domain.repositories.monitoring.weather_repository import WeatherRepository
+from app.domain.repositories.monitoring.weather_repository import WeatherReadingRepository
 
-__all__ = ["WeatherRepository"]
+__all__ = ["WeatherReadingRepository"]

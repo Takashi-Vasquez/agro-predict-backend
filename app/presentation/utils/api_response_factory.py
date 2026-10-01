@@ -29,11 +29,11 @@ class ApiResponseFactory:
         return JSONResponse(status_code=204, content=None)
 
     @staticmethod
-    def bad_request(message: str = "Solicitud inválida") -> JSONResponse:
+    def bad_request(message: str = "Solicitud inválida", data: Any = None) -> JSONResponse:
         return JSONResponse(
             status_code=400,
             content=ApiResponse(
-                statusCode=400, message=message, data=None
+                statusCode=400, message=message, data=data
             ).model_dump(mode="json"),
         )
 

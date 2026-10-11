@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 
 from app.domain.entities.general.campaign import Campaign
 from app.domain.repositories.general.campaign_repository import CampaignRepository
+from app.infrastructure.repositories.base import apply_company_filter, get_company_id_or_none
 from app.infrastructure.orm.general.campaign import Campaign as CampaignModel
 from app.infrastructure.orm.operations.crop import Crop as CropModel
 
@@ -18,6 +19,7 @@ class CampaignRepositoryImpl(CampaignRepository):
             CampaignModel.id == campaign_id,
             CampaignModel.status != "DELETED",
         )
+        stmt = apply_company_filter(stmt, CampaignModel)
         orm = self.db.scalar(stmt)
         return self._to_entity(orm) if orm else None
 
@@ -34,6 +36,7 @@ class CampaignRepositoryImpl(CampaignRepository):
         if crop_id is not None:
             stmt = stmt.where(CampaignModel.crop_id == crop_id)
         stmt = stmt.offset(offset).limit(limit)
+        stmt = apply_company_filter(stmt, CampaignModel)
         return [self._to_entity(o) for o in self.db.scalars(stmt).all()]
 
     def create(
@@ -54,6 +57,7 @@ class CampaignRepositoryImpl(CampaignRepository):
             end_date=end_date,
             crop_id=crop_id,
             status=status,
+            company_id=get_company_id_or_none(),
         )
         self.db.add(orm)
         self.db.commit()
@@ -82,6 +86,7 @@ class CampaignRepositoryImpl(CampaignRepository):
         if exclude_id is not None:
             conditions.append(CampaignModel.id != exclude_id)
         stmt = select(CampaignModel.id).where(and_(*conditions)).limit(1)
+        stmt = apply_company_filter(stmt, CampaignModel)
         return self.db.scalar(stmt) is not None
 
     def check_date_overlap(
@@ -96,6 +101,7 @@ class CampaignRepositoryImpl(CampaignRepository):
         if exclude_id is not None:
             conditions.append(CampaignModel.id != exclude_id)
         stmt = select(CampaignModel.id).where(and_(*conditions)).limit(1)
+        stmt = apply_company_filter(stmt, CampaignModel)
         return self.db.scalar(stmt) is not None
 
     @staticmethod

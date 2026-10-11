@@ -6,8 +6,9 @@ from sqlalchemy.orm import Session
 from app.domain.entities import Menu
 from app.domain.repositories import MenuRepository
 from app.infrastructure.orm.security.menu import Menu as MenuModel
-from app.infrastructure.orm.security.role_menu_permission import RoleMenuPermission as RMPModel
 from app.infrastructure.orm.security.permission import Permission as PermissionModel
+from app.infrastructure.orm.security.role_permission_details import RolePermissionDetail as RPDDetailModel
+from app.infrastructure.orm.security.role_permissions import RolePermission as RolePermModel
 
 
 class MenuRepositoryImpl(MenuRepository):
@@ -46,13 +47,15 @@ class MenuRepositoryImpl(MenuRepository):
 
         stmt = (
             select(
-                RMPModel.menu_id,
+                RPDDetailModel.menu_id,
                 PermissionModel.code,
             )
-            .join(PermissionModel, RMPModel.permission_id == PermissionModel.id)
+            .join(PermissionModel, RPDDetailModel.permission_id == PermissionModel.id)
+            .join(RolePermModel, RPDDetailModel.role_permissions_id == RolePermModel.id)
             .where(
-                RMPModel.role_id.in_(role_ids),
-                RMPModel.status == "ACTIVE",
+                RPDDetailModel.role_permissions_id.in_(role_ids),
+                RPDDetailModel.status == "ACTIVE",
+                RolePermModel.status == "ACTIVE",
             )
         )
         rows = self.db.execute(stmt).all()
@@ -69,11 +72,15 @@ class MenuRepositoryImpl(MenuRepository):
     def get_all_with_permissions(self) -> list[dict]:
         stmt = (
             select(
-                RMPModel.menu_id,
+                RPDDetailModel.menu_id,
                 PermissionModel.code,
             )
-            .join(PermissionModel, RMPModel.permission_id == PermissionModel.id)
-            .where(RMPModel.status == "ACTIVE")
+            .join(PermissionModel, RPDDetailModel.permission_id == PermissionModel.id)
+            .join(RolePermModel, RPDDetailModel.role_permissions_id == RolePermModel.id)
+            .where(
+                RPDDetailModel.status == "ACTIVE",
+                RolePermModel.status == "ACTIVE",
+            )
         )
         rows = self.db.execute(stmt).all()
 

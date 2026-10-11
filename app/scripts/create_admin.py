@@ -53,6 +53,17 @@ def main() -> None:
             is_admin=True,
         )
 
+        from app.scripts.seed_data import (
+            _ensure_admin_profile,
+            _ensure_default_company,
+            _ensure_user_company,
+        )
+
+        company = _ensure_default_company(db)
+        _ensure_admin_profile(db, user.id)
+        _ensure_user_company(db, user.id, company.id)
+        db.commit()
+
         print(f"\nAdmin creado exitosamente:")
         print(f"  ID:    {user.id}")
         print(f"  Email: {user.email}")

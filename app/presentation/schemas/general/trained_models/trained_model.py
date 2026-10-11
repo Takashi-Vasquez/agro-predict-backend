@@ -1,4 +1,5 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
+from datetime import date, datetime
 from typing import Optional, List, Dict, Any
 
 
@@ -21,6 +22,8 @@ class CandidateMetrics(BaseModel):
 
 
 class TrainResponse(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
     version: str
     semantic_version: Optional[str] = Field(default=None, alias="semanticVersion")
     best_algorithm: Optional[str] = Field(default=None, alias="bestAlgorithm")
@@ -35,6 +38,8 @@ class TrainResponse(BaseModel):
 
 
 class TrainedModelRead(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
     id: int
     name: str
     algorithm: str
@@ -48,6 +53,8 @@ class TrainedModelRead(BaseModel):
 
 
 class TrainedModelDetail(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
     id: int
     name: str
     algorithm: str
@@ -65,39 +72,44 @@ class TrainedModelDetail(BaseModel):
 
 
 class SelectModelResponse(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
     id: int
     algorithm: str
     is_selected: bool = Field(alias="isSelected")
 
 
 class ModelVersionRead(BaseModel):
+    model_config = ConfigDict(from_attributes=True, populate_by_name=True)
+
     id: int
-    model_name: str
+    model_name: str = Field(alias="modelName")
     version: str
     status: str
-    trained_at: Optional[str] = Field(default=None, alias="trainedAt")
+    trained_at: Optional[datetime] = Field(default=None, alias="trainedAt")
     git_commit: Optional[str] = Field(default=None, alias="gitCommit")
     data_version: Optional[str] = Field(default=None, alias="dataVersion")
-    data_from: Optional[str] = Field(default=None, alias="dataFrom")
-    data_to: Optional[str] = Field(default=None, alias="dataTo")
+    data_from: Optional[date] = Field(default=None, alias="dataFrom")
+    data_to: Optional[date] = Field(default=None, alias="dataTo")
     features: Optional[List[str]] = None
-    candidates_evaluated: Optional[Dict[str, Dict[str, float]]] = Field(default=None, alias="candidatesEvaluated")
+    candidates_evaluated: Optional[Dict[str, Dict[str, Any]]] = Field(default=None, alias="candidatesEvaluated")
     metrics: Optional[Dict[str, float]] = None
     baseline_compared: Optional[str] = Field(default=None, alias="baselineCompared")
     base_version_id: Optional[int] = Field(default=None, alias="baseVersionId")
     artifact_path: Optional[str] = Field(default=None, alias="artifactPath")
-    trained_at: Optional[str] = Field(default=None, alias="trainedAt")
 
 
 class ModelRunRead(BaseModel):
+    model_config = ConfigDict(from_attributes=True, populate_by_name=True)
+
     id: int
     model_version_id: Optional[int] = Field(default=None, alias="modelVersionId")
-    trained_at: Optional[str] = Field(default=None, alias="trainedAt")
+    trained_at: Optional[datetime] = Field(default=None, alias="trainedAt")
     git_commit: Optional[str] = Field(default=None, alias="gitCommit")
     data_version: Optional[str] = Field(default=None, alias="dataVersion")
-    data_from: Optional[str] = Field(default=None, alias="dataFrom")
-    data_to: Optional[str] = Field(default=None, alias="dataTo")
-    candidates_evaluated: Optional[Dict[str, Dict[str, float]]] = Field(default=None, alias="candidatesEvaluated")
+    data_from: Optional[date] = Field(default=None, alias="dataFrom")
+    data_to: Optional[date] = Field(default=None, alias="dataTo")
+    candidates_evaluated: Optional[Dict[str, Dict[str, Any]]] = Field(default=None, alias="candidatesEvaluated")
     winner: Optional[str] = None
     improvement_vs_baseline: Optional[float] = Field(default=None, alias="improvementVsBaseline")
     generated_version: bool = Field(default=False, alias="generatedVersion")

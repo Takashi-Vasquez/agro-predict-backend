@@ -12,6 +12,7 @@ from app.presentation.api.v1.router import router
 from app.presentation.utils.exception_middleware import ExceptionMiddleware
 from app.presentation.api.tags import get_tags
 from app.infrastructure.scheduler.weather_scheduler import start_scheduler, stop_scheduler
+from app.core.middleware.empresa_middleware import EmpresaMiddleware
 
 
 @asynccontextmanager
@@ -47,9 +48,10 @@ def create_app() -> FastAPI:
         allow_origins=settings.CORS_ORIGINS,
         allow_credentials=True,
         allow_methods=["*"],
-        allow_headers=["*"],
+        allow_headers=["*", "X-Company-Id"],
     )
 
+    app.add_middleware(EmpresaMiddleware)
     app.add_middleware(ExceptionMiddleware)
 
     app.include_router(router, prefix=settings.API_V1_PREFIX)

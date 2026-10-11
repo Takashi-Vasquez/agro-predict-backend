@@ -1,8 +1,8 @@
 from app.domain.repositories import (
+    AuthRepository,
+    CompanyRepository,
     MenuRepository,
-    ProfileRepository,
-    UserRepository,
-    UserRoleRepository,
+    RolePermissionRepository,
 )
 
 ALL_PERMISSIONS = ["CREATE", "READ", "UPDATE", "DELETE", "EXPORT"]
@@ -11,31 +11,32 @@ ALL_PERMISSIONS = ["CREATE", "READ", "UPDATE", "DELETE", "EXPORT"]
 class GetUserUseCase:
     def __init__(
         self,
-        user_repo: UserRepository,
-        profile_repo: ProfileRepository,
-        user_role_repo: UserRoleRepository,
+        auth_repo: AuthRepository,
         menu_repo: MenuRepository,
+        company_repo: CompanyRepository,
+        role_permission_repo: RolePermissionRepository,
     ) -> None:
-        self.user_repo = user_repo
-        self.profile_repo = profile_repo
-        self.user_role_repo = user_role_repo
+        self.auth_repo = auth_repo
         self.menu_repo = menu_repo
+        self.company_repo = company_repo
+        self.role_permission_repo = role_permission_repo
 
     def execute(self, user_id: int) -> dict:
-        user = self.user_repo.get(user_id)
+        user = self.auth_repo.get(user_id)
         if not user:
             raise ValueError("Usuario no encontrado")
 
-        profile = self.profile_repo.get_by_user_id(user_id)
-        user_roles = self.user_role_repo.get_by_user_id(user_id)
-        roles = [ur for ur in user_roles]
+        role_entities = self.role_permission_repo.get_roles_for_user(user_id)
+        role_ids = [r.id for r in role_entities]
+        roles = [{"id": r.id, "name": r.name} for r in role_entities]
+
+        companies = self.company_repo.list_for_user(user_id)
 
         all_menus = self.menu_repo.get_all()
 
         if user.is_admin:
             menu_perm_map: dict[int, list[str]] = {m.id: ALL_PERMISSIONS for m in all_menus}
         else:
-            role_ids = [ur.role_id for ur in user_roles]
             menu_perms = self.menu_repo.get_menus_with_permissions_for_role_ids(role_ids)
             menu_perm_map = {}
             for item in menu_perms:
@@ -45,31 +46,36 @@ class GetUserUseCase:
 
         return {
             "user": user,
-            "profile": profile,
+            "profile": user.profile,
             "roles": roles,
+            "companies": companies,
             "menus": menus,
         }
 
     def _build_tree(self, all_menus, menu_perm_map: dict[int, list[str]]) -> list[dict]:
         children_map: dict[int | None, list] = {}
         for m in all_menus:
-            parent_id = m.parent_id
-            if parent_id not in children_map:
-                children_map[parent_id] = []
-            children_map[parent_id].append(m)
+            children_map.setdefault(m.parent_id, []).append(m)
 
         root_menus = children_map.get(None, [])
         result = []
         for menu in sorted(root_menus, key=lambda x: x.order_index):
             node = self._build_node(menu, children_map, menu_perm_map)
-            result.append(node)
+            if node:
+                result.append(node)
         return result
 
     def _build_node(self, menu, children_map, menu_perm_map: dict[int, list[str]]) -> dict:
         children = children_map.get(menu.id, [])
         child_nodes = []
         for child in sorted(children, key=lambda x: x.order_index):
-            child_nodes.append(self._build_node(child, children_map, menu_perm_map))
+            node = self._build_node(child, children_map, menu_perm_map)
+            if node:
+                child_nodes.append(node)
+
+        permissions = menu_perm_map.get(menu.id, [])
+        if not permissions and not child_nodes:
+                return None
 
         return {
             "id": menu.id,
@@ -82,5 +88,5 @@ class GetUserUseCase:
             "badge": menu.badge,
             "status": menu.status,
             "children": child_nodes,
-            "permissions": menu_perm_map.get(menu.id, []),
+            "permissions": permissions,
         }

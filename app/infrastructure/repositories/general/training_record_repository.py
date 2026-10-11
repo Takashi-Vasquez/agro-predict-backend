@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 
 from app.domain.entities.general.training_record import TrainingRecord
 from app.domain.repositories.general.training_record_repository import TrainingRecordRepository
+from app.infrastructure.repositories.base import apply_company_filter, get_company_id_or_none
 from app.infrastructure.orm.general.training_record import TrainingRecord as TrainingRecordModel
 
 ROUND_FIELDS = ["nitrogen", "phosphorus", "potassium", "temperature", "humidity", "ph_soil", "rainfall", "target_yield"]
@@ -23,6 +24,7 @@ class TrainingRecordRepositoryImpl(TrainingRecordRepository):
             TrainingRecordModel.id == record_id,
             TrainingRecordModel.status != "DELETED",
         )
+        stmt = apply_company_filter(stmt, TrainingRecordModel)
         orm = self.db.scalar(stmt)
         return self._to_entity(orm) if orm else None
 
@@ -39,9 +41,11 @@ class TrainingRecordRepositoryImpl(TrainingRecordRepository):
         if crop_id is not None:
             stmt = stmt.where(TrainingRecordModel.crop_id == crop_id)
         stmt = stmt.offset(offset).limit(limit)
+        stmt = apply_company_filter(stmt, TrainingRecordModel)
         return [self._to_entity(o) for o in self.db.scalars(stmt).all()]
 
     def create(self, **kwargs) -> TrainingRecord:
+        kwargs.setdefault("company_id", get_company_id_or_none())
         orm = TrainingRecordModel(**_round_fields(kwargs))
         self.db.add(orm)
         self.db.commit()
@@ -71,6 +75,7 @@ class TrainingRecordRepositoryImpl(TrainingRecordRepository):
         stmt = select(func.count()).select_from(TrainingRecordModel).where(
             TrainingRecordModel.status != "DELETED",
         )
+        stmt = apply_company_filter(stmt, TrainingRecordModel)
         return self.db.scalar(stmt) or 0
 
     def count_by_crop(self) -> int:
@@ -85,6 +90,7 @@ class TrainingRecordRepositoryImpl(TrainingRecordRepository):
             )
             .group_by(TrainingRecordModel.crop_id)
         )
+        stmt = apply_company_filter(stmt, TrainingRecordModel)
         result = self.db.execute(stmt).all()
         print(len(result))
         return len(result)
@@ -101,6 +107,7 @@ class TrainingRecordRepositoryImpl(TrainingRecordRepository):
             )
             .group_by(TrainingRecordModel.campaign)
         )
+        stmt = apply_company_filter(stmt, TrainingRecordModel)
         result = self.db.execute(stmt).all()
         return len(result)
 
@@ -113,6 +120,7 @@ class TrainingRecordRepositoryImpl(TrainingRecordRepository):
             )
             .limit(1)
         )
+        stmt = apply_company_filter(stmt, TrainingRecordModel)
         
         has_untrained = self.db.execute(stmt).scalar() is not None
         
@@ -121,7 +129,14 @@ class TrainingRecordRepositoryImpl(TrainingRecordRepository):
 
     
     def create_batch(self, records: list[dict]) -> list[TrainingRecord]:
-        orms = [TrainingRecordModel(**{k: v for k, v in _round_fields(r).items() if k not in {'row', 'error','crop'}}) for r in records]
+        default_company = get_company_id_or_none()
+        orms = [
+            TrainingRecordModel(**{
+                **{k: v for k, v in _round_fields(r).items() if k not in {'row', 'error', 'crop'}},
+                **({"company_id": default_company} if default_company is not None else {}),
+            })
+            for r in records
+        ]
         self.db.add_all(orms)
         self.db.commit()
         for orm in orms:

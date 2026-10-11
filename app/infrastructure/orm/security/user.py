@@ -13,5 +13,6 @@ class User(BitacoraMixin, Base):
     hashed_password: Mapped[str] = mapped_column(String(255), nullable=False)
     is_admin: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
 
-    profile = relationship("Profile", back_populates="user", uselist=False, lazy="selectin")
-    user_roles = relationship("UserRole", back_populates="user", lazy="selectin")
+    profile = relationship("Profile", back_populates="user", uselist=False, lazy="raise")
+    user_roles = relationship("UserRole", back_populates="user", lazy="raise")
+    user_companies = relationship("UserCompany", back_populates="user", lazy="raise")

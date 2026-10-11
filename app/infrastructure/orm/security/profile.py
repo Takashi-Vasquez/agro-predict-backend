@@ -16,9 +16,10 @@ class Profile(BitacoraMixin, Base):
         nullable=False,
         index=True,
     )
+    document_number: Mapped[str | None] = mapped_column(String(30), nullable=True)
     first_name: Mapped[str] = mapped_column(String(100), nullable=False)
     last_name: Mapped[str] = mapped_column(String(100), nullable=False)
     phone: Mapped[str | None] = mapped_column(String(20), nullable=True)
     age: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
-    user = relationship("User", back_populates="profile", lazy="selectin")
+    user = relationship("User", back_populates="profile", lazy="raise")

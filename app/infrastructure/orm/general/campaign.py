@@ -14,6 +14,9 @@ class Campaign(BitacoraMixin, Base):
 
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("security.users.id"), index=True, nullable=False)
+    company_id: Mapped[int | None] = mapped_column(
+        ForeignKey("core.company.id"), index=True, nullable=True
+    )
     code: Mapped[str] = mapped_column(String(50), nullable=False)
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     start_date: Mapped[date] = mapped_column(Date, nullable=False)

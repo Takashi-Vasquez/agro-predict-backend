@@ -1,5 +1,9 @@
 # AGENTS.md - Agro Predict Backend
 
+## Instrucciones Globales
+
+- **Responder siempre en español** — Todas las respuestas deben ser en español.
+
 ## Inicio Rápido
 
 ```bash

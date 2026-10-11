@@ -94,17 +94,6 @@ def list_models(user: CurrentUser, db: DbDep):
     return ApiResponseFactory.ok(data, "Modelos obtenidos correctamente")
 
 
-@router.get("/{model_id}")
-def get_model(model_id: int, user: CurrentUser, db: DbDep):
-    model_repo = TrainedModelRepositoryImpl(db)
-    use_case = GetModelUseCase(model_repo)
-    raw = use_case.execute(model_id)
-    if raw is None:
-        raise AppException.not_found("Modelo no encontrado")
-    data = TrainedModelDetail(**raw).model_dump(by_alias=True)
-    return ApiResponseFactory.ok(data, "Modelo obtenido correctamente")
-
-
 @router.patch("/{model_id}/select")
 def select_model(model_id: int, user: CurrentUser, db: DbDep):
     model_repo = TrainedModelRepositoryImpl(db)
@@ -191,4 +180,25 @@ def get_production_model(user: CurrentUser, db: DbDep):
     model = registry.get_production_model()
     if not model:
         raise AppException.not_found("No hay modelo en producción")
-    return ApiResponseFactory.ok(model, "Modelo en producción obtenido")
+    data = ModelVersionRead(
+        id=model["id"],
+        model_name="yield-prediction",
+        version=model["version"],
+        status="production",
+        trained_at=model["trained_at"],
+        metrics=model["metrics"],
+        candidates_evaluated=model["candidates_evaluated"],
+        artifact_path=model["artifact_path"],
+    ).model_dump(by_alias=True)
+    return ApiResponseFactory.ok(data, "Modelo en producción obtenido")
+
+
+@router.get("/{model_id}")
+def get_model(model_id: int, user: CurrentUser, db: DbDep):
+    model_repo = TrainedModelRepositoryImpl(db)
+    use_case = GetModelUseCase(model_repo)
+    raw = use_case.execute(model_id)
+    if raw is None:
+        raise AppException.not_found("Modelo no encontrado")
+    data = TrainedModelDetail(**raw).model_dump(by_alias=True)
+    return ApiResponseFactory.ok(data, "Modelo obtenido correctamente")

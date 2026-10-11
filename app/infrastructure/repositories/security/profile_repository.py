@@ -28,8 +28,15 @@ class ProfileRepositoryImpl(ProfileRepository):
         orm = self.db.scalar(stmt)
         return self._to_entity(orm) if orm else None
 
-    def create(self, user_id: int, first_name: str, last_name: str, phone: str | None, age: int | None) -> Profile:
-        orm = ProfileModel(user_id=user_id, first_name=first_name, last_name=last_name, phone=phone, age=age)
+    def create(self, user_id: int, first_name: str, last_name: str, phone: str | None, age: int | None, document_number: str | None = None) -> Profile:
+        orm = ProfileModel(
+            user_id=user_id,
+            first_name=first_name,
+            last_name=last_name,
+            phone=phone,
+            age=age,
+            document_number=document_number,
+        )
         self.db.add(orm)
         self.db.commit()
         self.db.refresh(orm)
@@ -48,6 +55,7 @@ class ProfileRepositoryImpl(ProfileRepository):
         return Profile(
             id=orm.id,
             user_id=orm.user_id,
+            document_number=orm.document_number,
             first_name=orm.first_name,
             last_name=orm.last_name,
             phone=orm.phone,

@@ -16,6 +16,13 @@ class RoleRead(BaseReadSchema):
     updated_at: datetime
 
 
+class RoleBriefRead(BaseReadSchema):
+    model_config = ConfigDict(from_attributes=True, populate_by_name=True)
+
+    id: int = Field(alias="id")
+    name: str = Field(alias="name")
+
+
 class PermissionRead(BaseReadSchema):
     model_config = ConfigDict(from_attributes=True, populate_by_name=True)
 
@@ -43,6 +50,17 @@ class MenuTreeRead(MenuRead):
     permissions: list[str] = Field(default=[], alias="permissions")
 
 
+class CompanyMeRead(BaseReadSchema):
+    model_config = ConfigDict(from_attributes=True, populate_by_name=True)
+
+    id: int = Field(alias="id")
+    code: str = Field(alias="code")
+    name: str = Field(alias="name")
+    ruc: str | None = Field(default=None, alias="ruc")
+    logo_path: str | None = Field(default=None, alias="logoPath")
+    is_default: bool = Field(default=False, alias="isDefault")
+
+
 class UserMeRead(BaseReadSchema):
     model_config = ConfigDict(from_attributes=True, populate_by_name=True)
 
@@ -57,5 +75,6 @@ class UserMeRead(BaseReadSchema):
     phone: str | None = Field(default=None, alias="phone")
     age: int | None = Field(default=None, alias="age")
 
-    roles: list[RoleRead] = Field(alias="roles")
+    roles: list[RoleBriefRead] = Field(default=[], alias="roles")
+    companies: list[CompanyMeRead] = Field(default=[], alias="companies")
     menus: list[MenuTreeRead] = Field(alias="menus")

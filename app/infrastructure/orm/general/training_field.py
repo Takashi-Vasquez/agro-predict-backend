@@ -1,4 +1,4 @@
-from sqlalchemy import Boolean, Float, Integer, String
+from sqlalchemy import Boolean, Float, ForeignKey, Integer, String
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -10,6 +10,9 @@ class TrainingField(BitacoraMixin, Base):
     __table_args__ = {"schema": Schemas.CORE}
 
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
+    company_id: Mapped[int | None] = mapped_column(
+        ForeignKey("core.company.id"), index=True, nullable=True
+    )
     field_key: Mapped[str] = mapped_column(String(100), unique=True, nullable=False, index=True)
     label: Mapped[str] = mapped_column(String(150), nullable=False)
     field_type: Mapped[str] = mapped_column(String(50), nullable=False)

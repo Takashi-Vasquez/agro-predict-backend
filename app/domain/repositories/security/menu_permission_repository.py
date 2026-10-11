@@ -10,3 +10,6 @@ class MenuPermissionRepository(ABC):
 
     @abstractmethod
     def get_permissions_by_menu_id(self, menu_id: int) -> list[Permission]: ...
+
+    @abstractmethod
+    def get_permissions_by_menu_ids(self, menu_ids: list[int]) -> dict[int, list[Permission]]: ...

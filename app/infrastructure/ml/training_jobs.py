@@ -38,7 +38,12 @@ def _run_training_job(
     algorithms: Optional[list[str]],
     artifacts_dir: Path,
     bump_level: str = "patch",
+    company_id: Optional[int] = None,
 ) -> None:
+    if company_id is not None:
+        from app.core.company_context import CompanyContext
+        CompanyContext.set_empresa_id(company_id)
+
     with _lock:
         _jobs[job_id]["status"] = JobStatus.RUNNING
         _jobs[job_id]["started_at"] = datetime.utcnow().isoformat()
@@ -281,6 +286,9 @@ def submit_training_job(
     artifacts_dir: Path = None,
     bump_level: str = "patch",
 ) -> str:
+    from app.core.company_context import CompanyContext
+    company_id = CompanyContext.get_empresa_id()
+
     job_id = str(uuid.uuid4())
     with _lock:
         _jobs[job_id] = {
@@ -302,6 +310,7 @@ def submit_training_job(
         algorithms,
         artifacts_dir,
         bump_level,
+        company_id,
     )
     return job_id
 

@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 
 from app.domain.entities.general.training_field import TrainingField
 from app.domain.repositories.general.training_field_repository import TrainingFieldRepository
+from app.infrastructure.repositories.base import apply_company_filter
 from app.infrastructure.orm.general.training_field import TrainingField as TrainingFieldModel
 
 
@@ -16,6 +17,7 @@ class TrainingFieldRepositoryImpl(TrainingFieldRepository):
             .where(TrainingFieldModel.status != "DELETED")
             .order_by(TrainingFieldModel.order_index)
         )
+        stmt = apply_company_filter(stmt, TrainingFieldModel)
         return [self._to_entity(o) for o in self.db.scalars(stmt).all()]
 
     @staticmethod

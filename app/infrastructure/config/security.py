@@ -7,6 +7,8 @@ from app.infrastructure.config.settings import get_settings
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
+PASSWORD_SENTINEL = "********"
+
 
 def hash_password(password: str) -> str:
     return pwd_context.hash(password)

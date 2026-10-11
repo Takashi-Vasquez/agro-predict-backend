@@ -14,6 +14,9 @@ class TrainingRecord(BitacoraMixin, Base):
 
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("security.users.id"), index=True, nullable=False)
+    company_id: Mapped[int | None] = mapped_column(
+        ForeignKey("core.company.id"), index=True, nullable=True
+    )
     crop_id: Mapped[int | None] = mapped_column(ForeignKey("operations.crops.id"), nullable=True)
     campaign: Mapped[str | None] = mapped_column(String(50), nullable=True)
     location: Mapped[str | None] = mapped_column(String(255), nullable=True)

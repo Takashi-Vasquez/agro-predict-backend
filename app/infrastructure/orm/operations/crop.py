@@ -10,6 +10,9 @@ class Crop(BitacoraMixin, Base):
 
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
     owner_id: Mapped[int] = mapped_column(ForeignKey("security.users.id"), index=True, nullable=False)
+    company_id: Mapped[int | None] = mapped_column(
+        ForeignKey("core.company.id"), index=True, nullable=True
+    )
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     variety_id: Mapped[int] = mapped_column(ForeignKey("operations.varieties.id"), index=True, nullable=False)
     category: Mapped[str] = mapped_column(String(100), nullable=False)

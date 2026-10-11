@@ -39,7 +39,7 @@ class TestModelRegistry:
     @pytest.fixture
     def registry(self, mock_db, mock_settings):
         """Create ModelRegistry instance with mocked dependencies"""
-        with patch('app.infrastructure.ml.model_registry._load_config') as mock_load:
+        with patch.object(ModelRegistry, '_load_config') as mock_load:
             mock_load.return_value = {
                 "model": {
                     "name": "prediccion-rendimiento",
@@ -71,26 +71,23 @@ class TestModelRegistry:
     
     def test_get_current_version(self, registry):
         """Test getting current version from file"""
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.txt', delete=False) as f:
-            f.write("1.3.0\n")
-            temp_path = f.name
-        
-        try:
-            registry.settings.BASE_DIR = os.path.dirname(temp_path)
+        with tempfile.TemporaryDirectory() as tmpdir:
+            version_file = Path(tmpdir) / "model_version.txt"
+            version_file.write_text("1.3.0\n", encoding="utf-8")
+
+            registry.base_dir = Path(tmpdir)
             version = registry.get_current_version()
             assert version == "1.3.0"
-        finally:
-            os.unlink(temp_path)
     
     def test_get_production_model(self, registry):
         """Test getting production model"""
         mock_row = Mock()
         mock_row.id = 1
         mock_row.version = "1.2.0"
-        mock_row.metricas = {"rmse": 0.4, "mae": 0.3}
-        mock_row.candidatos_evaluados = {"random_forest": {"rmse": 0.4}}
-        mock_row.ruta_artefacto = "modelos/1.2.0/"
-        mock_row.entrenado_en = "2026-01-15"
+        mock_row.metrics = {"rmse": 0.4, "mae": 0.3}
+        mock_row.candidates_evaluated = {"random_forest": {"rmse": 0.4}}
+        mock_row.artifact_path = "modelos/1.2.0/"
+        mock_row.trained_at = "2026-01-15"
         
         registry.db.execute.return_value.fetchone.return_value = mock_row
         
@@ -98,7 +95,7 @@ class TestModelRegistry:
         
         assert result is not None
         assert result["version"] == "1.2.0"
-        assert result["metricas"]["rmse"] == 0.4
+        assert result["metrics"]["rmse"] == 0.4
     
     def test_get_production_model_none(self, registry):
         """Test getting production model when none exists"""
@@ -152,7 +149,7 @@ class TestModelRegistry:
     def test_evaluate_with_baseline_no_improvement(self, registry):
         """Test candidate evaluation with baseline but no significant improvement"""
         candidates = {
-            "random_forest": {"rmse": 0.495, "mae": 0.34},  # Only 1% improvement
+            "random_forest": {"rmse": 0.496, "mae": 0.34},  # Only 0.8% improvement
         }
         baseline = {"rmse": 0.50, "mae": 0.35}
         
@@ -224,24 +221,26 @@ class TestPromotionLogic:
         prod_row = Mock()
         prod_row.id = 1
         prod_row.version = "1.2.0"
-        prod_row.candidatos_evaluados = {
+        prod_row.metrics = {"rmse": 0.40}
+        prod_row.candidates_evaluated = {
             "random_forest": {"rmse": 0.40},
             "linear_regression": {"rmse": 0.55}
         }
-        prod_row.entrenado_en = "2026-01-15"
+        prod_row.trained_at = "2026-01-15"
         
         # Mock candidate
         cand_row = Mock()
         cand_row.id = 2
         cand_row.version = "1.3.0"
-        cand_row.candidatos_evaluados = {
+        cand_row.metrics = {"rmse": 0.45}
+        cand_row.candidates_evaluated = {
             "random_forest": {"rmse": 0.45},  # Worse!
             "linear_regression": {"rmse": 0.50}
         }
         
         registry.db.execute.side_effect = [
-            Mock(fetchone=Mock(return_value=prod_row)),  # get_production_model
-            Mock(fetchone=Mock(return_value=cand_row)),  # get candidate
+            Mock(fetchone=Mock(return_value=cand_row)),  # get candidate (1st query)
+            Mock(fetchone=Mock(return_value=prod_row)),  # get_production_model (2nd query)
         ]
         
         with pytest.raises(ValueError, match="worsen"):
@@ -258,26 +257,29 @@ class TestPromotionLogic:
         prod_row = Mock()
         prod_row.id = 1
         prod_row.version = "1.2.0"
-        prod_row.candidatos_evaluados = {
+        prod_row.metrics = {"rmse": 0.40}
+        prod_row.candidates_evaluated = {
             "random_forest": {"rmse": 0.40},
             "linear_regression": {"rmse": 0.55}
         }
+        prod_row.trained_at = "2026-01-15"
         
         # Mock candidate - better or equal
         cand_row = Mock()
         cand_row.id = 2
         cand_row.version = "1.3.0"
-        cand_row.candidatos_evaluados = {
+        cand_row.metrics = {"rmse": 0.38}
+        cand_row.candidates_evaluated = {
             "random_forest": {"rmse": 0.38},  # Better!
             "linear_regression": {"rmse": 0.53}
         }
         
         registry.db.execute.side_effect = [
-            Mock(fetchone=Mock(return_value=prod_row)),  # get_production_model
-            Mock(fetchone=Mock(return_value=cand_row)),  # get candidate
+            Mock(fetchone=Mock(return_value=cand_row)),  # get candidate (1st query)
+            Mock(fetchone=Mock(return_value=prod_row)),  # get_production_model (2nd query)
             Mock(),  # archive current
             Mock(),  # promote candidate
-            Mock(),  # commit
+            Mock(),  # git tag version select
         ]
         
         result = registry.promote_version(2)

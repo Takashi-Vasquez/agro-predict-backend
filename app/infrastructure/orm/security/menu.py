@@ -25,7 +25,6 @@ class Menu(BitacoraMixin, Base):
     order_index: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
     badge: Mapped[str | None] = mapped_column(String(50), nullable=True)
 
-    parent = relationship("Menu", remote_side="Menu.id", back_populates="children", lazy="selectin")
-    children = relationship("Menu", back_populates="parent", lazy="selectin")
-    menu_permissions = relationship("MenuPermission", back_populates="menu", lazy="selectin")
-    role_menu_permissions = relationship("RoleMenuPermission", back_populates="menu", lazy="selectin")
+    parent = relationship("Menu", remote_side="Menu.id", back_populates="children", lazy="raise")
+    children = relationship("Menu", back_populates="parent", lazy="raise")
+    menu_permissions = relationship("MenuPermission", back_populates="menu", lazy="raise")

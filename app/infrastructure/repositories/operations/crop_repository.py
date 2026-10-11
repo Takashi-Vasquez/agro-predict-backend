@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 
 from app.domain.entities import Crop
 from app.domain.repositories import CropRepository
+from app.infrastructure.repositories.base import apply_company_filter, get_company_id_or_none
 from app.infrastructure.orm.operations.crop import Crop as CropModel
 
 
@@ -14,6 +15,7 @@ class CropRepositoryImpl(CropRepository):
 
     def get(self, crop_id: int) -> Crop | None:
         stmt = select(CropModel).where(CropModel.id == crop_id, CropModel.status != "DELETED")
+        stmt = apply_company_filter(stmt, CropModel)
         orm = self.db.scalar(stmt)
         return self._to_entity(orm) if orm else None
 
@@ -24,11 +26,13 @@ class CropRepositoryImpl(CropRepository):
             .order_by(CropModel.id)
             .offset(offset).limit(limit)
         )
+        stmt = apply_company_filter(stmt, CropModel)
         return [self._to_entity(o) for o in self.db.scalars(stmt).all()]
 
     def create(self, owner_id, name, variety_id, category, cycle, temperature, water, color) -> Crop:
         orm = CropModel(owner_id=owner_id, name=name, variety_id=variety_id, category=category,
-                        cycle=cycle, temperature=temperature, water=water, color=color)
+                        cycle=cycle, temperature=temperature, water=water, color=color,
+                        company_id=get_company_id_or_none())
         self.db.add(orm)
         self.db.commit()
         self.db.refresh(orm)

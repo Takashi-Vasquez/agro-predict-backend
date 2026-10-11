@@ -225,16 +225,17 @@ class ModelRegistry:
         metrics_json = json.dumps(candidates_evaluated.get(winner_name, {}))
         features_json = json.dumps(features)
         
+        from app.core.company_context import CompanyContext
         result = self.db.execute(text("""
             INSERT INTO core.model_version (
                 model_name, version, status, trained_at, git_commit, data_version,
                 data_from, data_to, features, candidates_evaluated, metrics,
-                baseline_compared, base_version_id, artifact_path, created_at
+                baseline_compared, base_version_id, artifact_path, created_at, company_id
             ) VALUES (
                 'yield-prediction', :version, 'candidate', NOW(),
                 :git_commit, :data_version, :data_from, :data_to,
                 :features, :candidates, :metrics,
-                :baseline, NULL, :artifact_path, NOW()
+                :baseline, NULL, :artifact_path, NOW(), :company_id
             ) RETURNING id
         """), {
             'version': version,
@@ -246,7 +247,8 @@ class ModelRegistry:
             'candidates': candidates_json,
             'metrics': metrics_json,
             'baseline': baseline_compared,
-            'artifact_path': f"modelos/{version}/"
+            'artifact_path': f"modelos/{version}/",
+            'company_id': CompanyContext.get_empresa_id(),
         })
         
         version_id = result.fetchone()[0]

@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 
 from app.domain.entities.general.model_version import ModelVersion
 from app.domain.repositories.general.model_version_repository import ModelVersionRepository
+from app.infrastructure.repositories.base import apply_company_filter
 from app.infrastructure.orm.general.model_version import ModelVersion as ModelVersionModel
 
 
@@ -15,6 +16,7 @@ class ModelVersionRepositoryImpl(ModelVersionRepository):
             ModelVersionModel.id == version_id,
             ModelVersionModel.status != "archived",
         )
+        stmt = apply_company_filter(stmt, ModelVersionModel)
         orm = self.db.scalar(stmt)
         return self._to_entity(orm) if orm else None
 
@@ -31,6 +33,7 @@ class ModelVersionRepositoryImpl(ModelVersionRepository):
             .offset(offset)
             .limit(limit)
         )
+        stmt = apply_company_filter(stmt, ModelVersionModel)
         return [self._to_entity(o) for o in self.db.scalars(stmt).all()]
 
     def get_production(self, model_name: str) -> ModelVersion | None:
@@ -39,6 +42,7 @@ class ModelVersionRepositoryImpl(ModelVersionRepository):
             ModelVersionModel.status == "production",
             ModelVersionModel.status != "archived",
         )
+        stmt = apply_company_filter(stmt, ModelVersionModel)
         orm = self.db.scalar(stmt)
         return self._to_entity(orm) if orm else None
 
@@ -53,6 +57,7 @@ class ModelVersionRepositoryImpl(ModelVersionRepository):
             .order_by(ModelVersionModel.trained_at.desc())
             .limit(1)
         )
+        stmt = apply_company_filter(stmt, ModelVersionModel)
         orm = self.db.scalar(stmt)
         return self._to_entity(orm) if orm else None
 

@@ -10,14 +10,16 @@ from app.infrastructure.orm.general.trained_model import TrainedModel
 from app.infrastructure.orm.general.campaign import Campaign
 from app.infrastructure.orm.monitoring.weather import WeatherReading
 from app.infrastructure.orm.security.profile import Profile
-from app.infrastructure.orm.security.role import Role
 from app.infrastructure.orm.security.user_role import UserRole
 from app.infrastructure.orm.security.menu import Menu
 from app.infrastructure.orm.security.permission import Permission
 from app.infrastructure.orm.security.menu_permission import MenuPermission
-from app.infrastructure.orm.security.role_menu_permission import RoleMenuPermission
+from app.infrastructure.orm.security.role_permission_details import RolePermissionDetail
+from app.infrastructure.orm.security.role_permissions import RolePermission
 from app.infrastructure.orm.core.catalog import Catalog
 from app.infrastructure.orm.core.catalog_detail import CatalogDetail
+from app.infrastructure.orm.core.company import Company
+from app.infrastructure.orm.security.user_company import UserCompany
 
 __all__ = [
     "Base",
@@ -31,12 +33,14 @@ __all__ = [
     "Campaign",
     "WeatherReading",
     "Profile",
-    "Role",
+    "RolePermission",
+    "RolePermissionDetail",
     "UserRole",
     "Menu",
     "Permission",
     "MenuPermission",
-    "RoleMenuPermission",
     "Catalog",
     "CatalogDetail",
+    "Company",
+    "UserCompany",
 ]

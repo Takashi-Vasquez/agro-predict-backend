@@ -27,8 +27,31 @@ class MenuPermissionRepositoryImpl(MenuPermissionRepository):
                 MenuPermissionModel.status != "DELETED",
                 PermissionModel.status != "DELETED",
             )
+            .order_by(PermissionModel.id)
         )
         return [Permission(id=o.id, code=o.code, name=o.name) for o in self.db.scalars(stmt).all()]
+
+    def get_permissions_by_menu_ids(self, menu_ids: list[int]) -> dict[int, list[Permission]]:
+        if not menu_ids:
+            return {}
+
+        stmt = (
+            select(MenuPermissionModel.menu_id, PermissionModel)
+            .join(MenuPermissionModel, MenuPermissionModel.permission_id == PermissionModel.id)
+            .where(
+                MenuPermissionModel.menu_id.in_(menu_ids),
+                MenuPermissionModel.status != "DELETED",
+                PermissionModel.status != "DELETED",
+            )
+            .order_by(MenuPermissionModel.menu_id, PermissionModel.id)
+        )
+
+        result: dict[int, list[Permission]] = {}
+        for menu_id, orm in self.db.execute(stmt).all():
+            result.setdefault(menu_id, []).append(
+                Permission(id=orm.id, code=orm.code, name=orm.name)
+            )
+        return result
 
     @staticmethod
     def _to_entity(orm: MenuPermissionModel) -> MenuPermission:

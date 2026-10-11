@@ -16,12 +16,12 @@ import app.infrastructure.orm.operations.crop  # noqa: F401
 import app.infrastructure.orm.operations.variety  # noqa: F401
 import app.infrastructure.orm.general.prediction  # noqa: F401
 import app.infrastructure.orm.security.profile  # noqa: F401
-import app.infrastructure.orm.security.role  # noqa: F401
+import app.infrastructure.orm.security.role_permissions  # noqa: F401
+import app.infrastructure.orm.security.role_permission_details  # noqa: F401
 import app.infrastructure.orm.security.user_role  # noqa: F401
 import app.infrastructure.orm.security.menu  # noqa: F401
 import app.infrastructure.orm.security.permission  # noqa: F401
 import app.infrastructure.orm.security.menu_permission  # noqa: F401
-import app.infrastructure.orm.security.role_menu_permission  # noqa: F401
 import app.infrastructure.orm.monitoring.weather  # noqa: F401
 import app.infrastructure.orm.general.training_field  # noqa: F401
 import app.infrastructure.orm.general.training_record  # noqa: F401
@@ -31,6 +31,8 @@ import app.infrastructure.orm.general.model_version  # noqa: F401
 import app.infrastructure.orm.general.model_run  # noqa: F401
 import app.infrastructure.orm.core.catalog  # noqa: F401
 import app.infrastructure.orm.core.catalog_detail  # noqa: F401
+import app.infrastructure.orm.core.company  # noqa: F401
+import app.infrastructure.orm.security.user_company  # noqa: F401
 
 # Configuración de logging desde alembic.ini
 config = context.config

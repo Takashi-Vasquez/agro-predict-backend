@@ -1,10 +1,10 @@
-from app.domain.entities import RoleMenuPermission
-from app.domain.repositories import RoleMenuPermissionRepository
+from app.domain.entities import RolePermissionDetail
+from app.domain.repositories import RolePermissionRepository
 
 
 class ListRolePermissionsUseCase:
-    def __init__(self, rmp_repo: RoleMenuPermissionRepository) -> None:
-        self.rmp_repo = rmp_repo
+    def __init__(self, role_permission_repo: RolePermissionRepository) -> None:
+        self.role_permission_repo = role_permission_repo
 
-    def execute(self, role_id: int) -> list[RoleMenuPermission]:
-        return self.rmp_repo.get_by_role_id(role_id)
+    def execute(self, role_id: int) -> list[RolePermissionDetail]:
+        return self.role_permission_repo.get_details_by_role_id(role_id)

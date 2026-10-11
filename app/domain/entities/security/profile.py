@@ -10,6 +10,7 @@ class Profile:
     last_name: str = ""
     phone: str | None = None
     age: int | None = None
+    document_number: str | None = None
     status: str = "ACTIVE"
     created_at: datetime = field(default_factory=datetime.utcnow)
     updated_at: datetime = field(default_factory=datetime.utcnow)

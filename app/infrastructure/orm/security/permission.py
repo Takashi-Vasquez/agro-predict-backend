@@ -12,5 +12,4 @@ class Permission(BitacoraMixin, Base):
     code: Mapped[str] = mapped_column(String(50), unique=True, nullable=False)
     name: Mapped[str] = mapped_column(String(100), nullable=False)
 
-    menu_permissions = relationship("MenuPermission", back_populates="permission", lazy="selectin")
-    role_menu_permissions = relationship("RoleMenuPermission", back_populates="permission", lazy="selectin")
+    menu_permissions = relationship("MenuPermission", back_populates="permission", lazy="raise")

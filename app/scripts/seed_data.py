@@ -18,7 +18,7 @@ from app.infrastructure.orm.general.training_field import TrainingField
 from app.infrastructure.orm.security.menu import Menu
 from app.infrastructure.orm.security.menu_permission import MenuPermission
 from app.infrastructure.orm.security.permission import Permission
-from app.infrastructure.orm.security.role_menu_permission import RoleMenuPermission
+from app.infrastructure.orm.security.role_permission_details import RolePermissionDetail
 from app.infrastructure.orm.security.user import User
 
 
@@ -173,20 +173,11 @@ MENUS_DATA = [
         "menu_permissions": [],
         "submenus": [
             {
-                "code": "SECURITY.ROLES",
-                "name": "Roles",
-                "route": "/seguridad/roles",
-                "icon": "user",
-                "order_index": 1,
-                "badge": None,
-                "menu_permissions": ["CREATE", "READ", "UPDATE", "DELETE"],
-            },
-            {
                 "code": "SECURITY.ACCESS_PROFILE",
                 "name": "Perfil Accesos",
                 "route": "/seguridad/perfil-acceso",
                 "icon": "shield",
-                "order_index": 2,
+                "order_index": 1,
                 "badge": None,
                 "menu_permissions": ["CREATE", "READ", "UPDATE", "DELETE"],
             },
@@ -195,7 +186,7 @@ MENUS_DATA = [
                 "name": "Usuarios",
                 "route": "/seguridad/usuarios",
                 "icon": "user",
-                "order_index": 3,
+                "order_index": 2,
                 "badge": None,
                 "menu_permissions": ["CREATE", "READ", "UPDATE", "DELETE"],
             },
@@ -319,7 +310,7 @@ def _sync_menus(db, code_menu_codes: set[str], now: datetime) -> tuple[int, int]
                     mp.deleted_at = now
 
             for rmp in db.scalars(
-                select(RoleMenuPermission).where(RoleMenuPermission.menu_id == menu.id)
+                select(RolePermissionDetail).where(RolePermissionDetail.menu_id == menu.id)
             ).all():
                 if rmp.status != "DELETED":
                     rmp.status = "DELETED"
@@ -335,7 +326,7 @@ def _sync_menus(db, code_menu_codes: set[str], now: datetime) -> tuple[int, int]
                     mp.status = "ACTIVE"
                     mp.updated_at = now
 
-            for rmp in db.scalars(select(RoleMenuPermission).where(RoleMenuPermission.menu_id == menu.id)).all():
+            for rmp in db.scalars(select(RolePermissionDetail).where(RolePermissionDetail.menu_id == menu.id)).all():
                 if rmp.status == "DELETED":
                     rmp.status = "ACTIVE"
                     rmp.updated_at = now
@@ -402,17 +393,64 @@ def _seed_menu_tree(
 
     return created, skipped
 
+def _ensure_default_company(db):
+    from app.infrastructure.orm.core.company import Company as CompanyModel
+
+    company = db.scalar(select(CompanyModel).where(CompanyModel.code == "HASSPERU"))
+    if not company:
+        company = CompanyModel(code="HASSPERU", name="Hass Peru")
+        db.add(company)
+        db.flush()
+        print("  Company creada: HASSPERU")
+    return company
+
+
+def _ensure_admin_profile(db, user_id: int) -> None:
+    from app.infrastructure.orm.security.profile import Profile as ProfileModel
+
+    existing = db.scalar(select(ProfileModel).where(ProfileModel.user_id == user_id))
+    if not existing:
+        db.add(ProfileModel(
+            user_id=user_id,
+            first_name="Admin",
+            last_name="Administrador",
+        ))
+
+
+def _ensure_user_company(db, user_id: int, company_id: int) -> None:
+    from app.infrastructure.orm.security.user_company import UserCompany as UserCompanyModel
+
+    existing = db.scalar(
+        select(UserCompanyModel).where(
+            UserCompanyModel.user_id == user_id,
+            UserCompanyModel.company_id == company_id,
+        )
+    )
+    if not existing:
+        db.add(UserCompanyModel(
+            user_id=user_id,
+            company_id=company_id,
+            is_default=True,
+            is_active=True,
+        ))
+
+
 def _create_admin(db) -> None:
     admin_email = "admin@tesis.com"
-    existing = db.scalar(select(User).where(User.email == admin_email))
-    if not existing:
-        db.add(User(
+    company = _ensure_default_company(db)
+    user = db.scalar(select(User).where(User.email == admin_email))
+    if not user:
+        user = User(
             email=admin_email,
             hashed_password=hash_password("admin@agro6020."),
             is_admin=True,
-        ))
-        db.commit()
+        )
+        db.add(user)
+        db.flush()
         print(f"  Admin creado: {admin_email}")
+    _ensure_admin_profile(db, user.id)
+    _ensure_user_company(db, user.id, company.id)
+    db.commit()
 
 CROPS_DATA = [
     {

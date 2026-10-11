@@ -20,10 +20,10 @@ class UserRole(BitacoraMixin, Base):
     )
     role_id: Mapped[int] = mapped_column(
         Integer,
-        ForeignKey("security.roles.id", ondelete="CASCADE"),
+        ForeignKey("security.role_permissions.id", ondelete="CASCADE"),
         nullable=False,
         index=True,
     )
 
-    user = relationship("User", back_populates="user_roles", lazy="selectin")
-    role = relationship("Role", back_populates="user_roles", lazy="selectin")
+    user = relationship("User", back_populates="user_roles", lazy="raise")
+    role = relationship("RolePermission", lazy="raise")

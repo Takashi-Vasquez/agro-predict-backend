@@ -1,4 +1,4 @@
-from app.infrastructure.orm.core import Catalog, CatalogDetail
+from app.infrastructure.orm.core import Catalog, CatalogDetail, Company
 from app.infrastructure.orm.general import (
     Campaign,
     ModelRun,
@@ -15,9 +15,10 @@ from app.infrastructure.orm.security import (
     MenuPermission,
     Permission,
     Profile,
-    Role,
-    RoleMenuPermission,
+    RolePermission,
+    RolePermissionDetail,
     User,
+    UserCompany,
     UserRole,
 )
 
@@ -25,6 +26,7 @@ __all__ = [
     "Campaign",
     "Catalog",
     "CatalogDetail",
+    "Company",
     "Crop",
     "Menu",
     "MenuPermission",
@@ -33,12 +35,13 @@ __all__ = [
     "Permission",
     "Prediction",
     "Profile",
-    "Role",
-    "RoleMenuPermission",
+    "RolePermission",
+    "RolePermissionDetail",
     "TrainedModel",
     "TrainingField",
     "TrainingRecord",
     "User",
+    "UserCompany",
     "UserRole",
     "Variety",
     "WeatherReading",

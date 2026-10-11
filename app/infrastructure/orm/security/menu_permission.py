@@ -25,5 +25,5 @@ class MenuPermission(BitacoraMixin, Base):
         index=True,
     )
 
-    menu = relationship("Menu", back_populates="menu_permissions", lazy="selectin")
-    permission = relationship("Permission", back_populates="menu_permissions", lazy="selectin")
+    menu = relationship("Menu", back_populates="menu_permissions", lazy="raise")
+    permission = relationship("Permission", back_populates="menu_permissions", lazy="raise")

@@ -6,7 +6,7 @@ class CreateUserUseCase:
     def __init__(self, user_repo: UserRepository) -> None:
         self.user_repo = user_repo
 
-    def execute(self, email: str, hashed_password: str, is_admin: bool = False) -> User:
+    def execute(self, email: str, hashed_password: str, is_admin: bool = False, status: str = "ACTIVE") -> User:
         existing = self.user_repo.get_by_email(email)
         if existing:
             raise ValueError("Ya existe un usuario con ese email")
@@ -14,4 +14,5 @@ class CreateUserUseCase:
             email=email,
             hashed_password=hashed_password,
             is_admin=is_admin,
+            status=status,
         )

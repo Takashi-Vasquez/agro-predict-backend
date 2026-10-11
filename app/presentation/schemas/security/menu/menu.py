@@ -30,4 +30,4 @@ class MenuTreeRead(BaseReadSchema):
     badge: str | None = Field(default=None, alias="badge")
     status: str
     children: list["MenuTreeRead"] = Field(default=[], alias="children")
-    available_permissions: list = Field(default=[], alias="availablePermissions")
+    permissions: list = Field(default=[], alias="permissions")

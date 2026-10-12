@@ -65,7 +65,7 @@ MENUS_DATA = [
                 "icon": "sparkles",
                 "order_index": 3,
                 "badge": "IA",
-                "menu_permissions": ["CREATE", "READ", "UPDATE", "DELETE"],
+                "menu_permissions": ["CREATE", "READ", "UPDATE", "EXPORT", "DELETE"],
             },
             {
                 "code": "GENERAL_PANEL.TRAINING_RECORDS",
@@ -74,7 +74,7 @@ MENUS_DATA = [
                 "icon": "sparkles",
                 "order_index": 4,
                 "badge": None,
-                "menu_permissions": ["CREATE", "READ", "UPDATE", "DELETE"],
+                "menu_permissions": ["CREATE", "READ", "UPDATE", "EXPORT", "DELETE"],
             },
         ],
     },

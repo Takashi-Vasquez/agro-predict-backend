@@ -55,8 +55,8 @@ class TrainingRecordRepositoryImpl(TrainingRecordRepository):
     def delete(self, record: TrainingRecord) -> None:
         orm = self.db.get(TrainingRecordModel, record.id)
         if orm:
-            orm.status = "DELETED"
-            orm.deleted_at = func.now()
+            orm.status = "INACTIVE"
+            orm.is_trained = False
             self.db.commit()
 
     def get_model_version_stats(self) -> TrainingRecordModelVersion:

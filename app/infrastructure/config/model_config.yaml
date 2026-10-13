@@ -3,6 +3,7 @@ model:
   algorithms:
     - "random_forest"
     - "linear_regression"
+    - "xgboost"
   promotion_metric: "rmse"          # rmse | mae | r2
   promotion_tolerance: 0.01         # mejora mínima relativa (1%) para considerar ganador
   random_seed: 42

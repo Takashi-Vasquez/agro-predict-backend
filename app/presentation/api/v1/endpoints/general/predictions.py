@@ -60,6 +60,11 @@ def predict_yield(payload: PredictionInput, user: CurrentUser, db: DbDep):
             user_id=user.id,
             data=payload.model_dump(),
             crop_id=payload.crop_id,
+            model_id=payload.model_id,
+        )
+    except FileNotFoundError:
+        raise AppException.bad_request(
+            "El artefacto del modelo no esta disponible. Entrena el modelo primero."
         )
     except ValueError as exc:
         raise AppException.bad_request(str(exc))

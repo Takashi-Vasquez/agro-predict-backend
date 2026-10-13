@@ -17,9 +17,12 @@ class PredictionInput(BaseModel):
     rainfall: float = Field(ge=0, le=500, description="Precipitación (mm)")
     crop_id: int | None = Field(default=None, description="Cultivo opcional asociado")
     target_yield: float | None = Field(default=None, description="Rendimiento real (t/ha) para comparar")
+    model_id: int | None = Field(default=None, description="Modelo a usar. Vacío = modelo seleccionado")
 
 
 class YieldPredictionResponse(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
     id: int
     predicted_yield: float = Field(alias="predictedYield")
     target_yield: float | None = Field(default=None, alias="targetYield")
@@ -27,6 +30,7 @@ class YieldPredictionResponse(BaseModel):
     model_id: int = Field(alias="modelId")
     model_algorithm: str = Field(alias="modelAlgorithm")
     model_r2: float = Field(alias="modelR2")
+    model_rmse: float = Field(alias="modelRmse")
 
 
 class PredictionRead(BaseReadSchema):

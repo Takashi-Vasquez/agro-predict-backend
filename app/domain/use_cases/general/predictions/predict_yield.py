@@ -68,4 +68,5 @@ class PredictYieldUseCase:
             "model_id": model.id,
             "model_algorithm": model.algorithm,
             "model_r2": model.r2_score,
+            "model_rmse": model.rmse,
         }

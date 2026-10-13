@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, timezone
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -91,14 +91,14 @@ class RolePermissionRepositoryImpl(RolePermissionRepository):
     def delete(self, role: RolePermission) -> None:
         orm = self.db.get(RolePermissionModel, role.id)
         orm.status = "DELETED"
-        orm.deleted_at = datetime.utcnow()
+        orm.deleted_at = datetime.now(timezone.utc)
         details_stmt = select(RolePermissionDetailModel).where(
             RolePermissionDetailModel.role_permissions_id == role.id,
             RolePermissionDetailModel.status == "ACTIVE",
         )
         for d in self.db.scalars(details_stmt).all():
             d.status = "DELETED"
-            d.deleted_at = datetime.utcnow()
+            d.deleted_at = datetime.now(timezone.utc)
         self.db.commit()
 
     def get_details_by_role_id(self, role_id: int) -> list[RolePermissionDetail]:
@@ -131,7 +131,7 @@ class RolePermissionRepositoryImpl(RolePermissionRepository):
             elif key not in new_keys and detail_entity.status == "ACTIVE":
                 orm = self.db.get(RolePermissionDetailModel, detail_entity.id)
                 orm.status = "DELETED"
-                orm.deleted_at = datetime.utcnow()
+                orm.deleted_at = datetime.now(timezone.utc)
 
         for menu_id, permission_id in new_keys:
             if (menu_id, permission_id) not in existing_map:

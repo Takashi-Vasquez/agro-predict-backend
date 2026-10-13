@@ -14,7 +14,7 @@ import os
 import shutil
 import subprocess
 import time
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 from contextlib import contextmanager
@@ -170,7 +170,7 @@ class ModelRegistry:
         # Save metadata
         metadata = {
             "version": version,
-            "created_at": datetime.utcnow().isoformat(),
+            "created_at": datetime.now(timezone.utc).isoformat(),
             "models": {
                 name: {
                     "algorithm": name,
@@ -208,22 +208,10 @@ class ModelRegistry:
         """Register a new model version in the database."""
         # Prepare data
         features_json = json.dumps(features)
-        
-        # Prepare candidates_evaluated with artifact paths
-        candidates_json = {}
-        for name, metrics in self.config["model"]["algorithms"]:
-            if name in trained_models:
-                candidates_json[name] = {
-                    "rmse": trained_models[name].get("metrics", {}).get("rmse", 0),
-                    "mae": trained_models[name].get("metrics", {}).get("mae", 0),
-                    "r2": trained_models[name].get("metrics", {}).get("r2", 0),
-                    "artifact": f"modelos/{version}/{name}.joblib"
-                }
-        
-        # For simplicity, use the provided candidates_evaluated
+
+        # candidates_evaluated already carries metrics per candidate
         candidates_json = json.dumps(candidates_evaluated)
         metrics_json = json.dumps(candidates_evaluated.get(winner_name, {}))
-        features_json = json.dumps(features)
         
         from app.core.company_context import CompanyContext
         result = self.db.execute(text("""

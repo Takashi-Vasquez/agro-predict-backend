@@ -4,6 +4,7 @@ Regression trainer with temporal split and versioning integration.
 import json
 import logging
 import yaml
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, List, Optional, Any
 
@@ -16,6 +17,7 @@ from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
+from xgboost import XGBRegressor
 
 logger = logging.getLogger(__name__)
 
@@ -35,6 +37,17 @@ ALGORITHMS = {
     "linear_regression": {
         "class": LinearRegression,
         "default_params": {},
+    },
+    "xgboost": {
+        "class": XGBRegressor,
+        "default_params": {
+            "n_estimators": 200,
+            "max_depth": 6,
+            "learning_rate": 0.1,
+            "objective": "reg:squarederror",
+            "random_state": 42,
+            "n_jobs": -1,
+        },
     },
 }
 
@@ -83,7 +96,7 @@ def _prepare_training_data(records: list[dict]) -> tuple[pd.DataFrame, pd.Series
         rows.append(row)
 
     df = pd.DataFrame(rows)
-    target = pd.Series([float(r.get("target_yield", 0)) for r in records])
+    y = pd.Series([float(r.get("target_yield", 0)) for r in records])
     return df, y, weights
 
 
@@ -272,7 +285,7 @@ def save_versioned_artifacts(
     meta_path = version_dir / "metadata.json"
     meta = {
         "version": version,
-        "created_at": __import__("datetime").datetime.utcnow().isoformat(),
+        "created_at": datetime.now(timezone.utc).isoformat(),
         "models": {
             result["algorithm"]: {
                 "algorithm": result["algorithm"],

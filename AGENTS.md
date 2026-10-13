@@ -29,10 +29,10 @@ docker exec agro-predict-api-dev alembic upgrade head
 docker exec agro-predict-api-dev python -m app.infrastructure.ml.train
 
 # Entrenar modelos de regresión (predicción de rendimiento) vía API
-curl -X POST http://localhost:8150/api/v1/trained-models/train \
+curl -X POST http://localhost:8150/api/v1/general/trained-models/train \
   -H "Authorization: Bearer <token>" \
   -H "Content-Type: application/json" \
-  -d '{"algorithms":["random_forest","linear_regression"]}'
+  -d '{"algorithms":null}'   # null = todos (random_forest, linear_regression, xgboost)
 ```
 
 ## Arquitectura
@@ -80,12 +80,12 @@ Para agregar un nuevo modelo ORM:
 ## Módulo ML
 
 - **Clasificador legacy** (tipo de cultivo): `app/infrastructure/ml/train.py` + `model.py` — RandomForest, 7 features
-- **Entrenador de regresión** (rendimiento): `app/infrastructure/ml/regression_trainer.py` — RF + LinearRegression
+- **Entrenador de regresión** (rendimiento): `app/infrastructure/ml/regression_trainer.py` — RF + LinearRegression + XGBoost
 - **Predictor de rendimiento**: `app/infrastructure/ml/yield_predictor.py` — carga modelo entrenado + scaler + imputer
 - **Entrenamiento asíncrono**: `app/infrastructure/ml/training_jobs.py` — ThreadPoolExecutor, polling de jobs
 - Campos de entrenamiento definidos en seed (`TRAINING_FIELDS_DATA`), no vía API CRUD
-- 9 columnas fijas: nitrogen, phosphorus, potassium, temperature, humidity, ph_soil, rainfall, irrigation_type, variety
-- Imputación: mediana para numéricos, hash a float para strings (irrigation_type, variety)
+- 10 columnas fijas: nitrogen, phosphorus, potassium, temperature, humidity, ph_soil, rainfall, irrigation_type, variety, soil_type
+- Imputación: mediana para numéricos, hash a float para strings (irrigation_type, variety, soil_type)
 - Mínimo 50 registros para entrenar
 
 ## Archivos Clave

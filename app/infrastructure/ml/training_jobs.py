@@ -5,7 +5,7 @@ import logging
 import threading
 import uuid
 from concurrent.futures import ThreadPoolExecutor
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from pathlib import Path
 from typing import Optional
@@ -46,7 +46,7 @@ def _run_training_job(
 
     with _lock:
         _jobs[job_id]["status"] = JobStatus.RUNNING
-        _jobs[job_id]["started_at"] = datetime.utcnow().isoformat()
+        _jobs[job_id]["started_at"] = datetime.now(timezone.utc).isoformat()
         _jobs[job_id]["bump_level"] = bump_level
 
     try:
@@ -114,9 +114,9 @@ def _run_training_job(
             should_promote = improvement >= tolerance
 
         git_commit = _get_git_commit()
-        data_version = f"data_v{datetime.utcnow().strftime('%Y-%m-%d')}"
+        data_version = f"data_v{datetime.now(timezone.utc).strftime('%Y-%m-%d')}"
         data_from = "2018-01-01"
-        data_to = datetime.utcnow().strftime("%Y-%m-%d")
+        data_to = datetime.now(timezone.utc).strftime("%Y-%m-%d")
         
         version_id = None
         new_version = None
@@ -124,7 +124,7 @@ def _run_training_job(
         reason_no_version = None
         duration = 0
         
-        start_time = datetime.utcnow()
+        start_time = datetime.now(timezone.utc)
         
         if should_promote:
             # Bump version
@@ -157,7 +157,7 @@ def _run_training_job(
                         winner_algorithm=winner_name,
                         baseline_compared=baseline["version"] if baseline else None,
                         data_from="2018-01-01",
-                        data_to=datetime.utcnow().strftime("%Y-%m-%d"),
+                        data_to=datetime.now(timezone.utc).strftime("%Y-%m-%d"),
                         features=[
                             "nitrogen", "phosphorus", "potassium", "temperature",
                             "humidity", "ph_soil", "rainfall",
@@ -165,7 +165,7 @@ def _run_training_job(
                         ],
                         artifact_path=f"modelos/{new_version}/",
                         git_commit=git_commit,
-                        data_version=f"data_v{datetime.utcnow().strftime('%Y-%m-%d')}"
+                        data_version=f"data_v{datetime.now(timezone.utc).strftime('%Y-%m-%d')}"
                     )
                     generated_version = True
             
@@ -177,14 +177,14 @@ def _run_training_job(
             reason_no_version = "no_supero_baseline"
 
         # Register run
-        duration = int((datetime.utcnow() - start_time).total_seconds())
+        duration = int((datetime.now(timezone.utc) - start_time).total_seconds())
         registry = get_registry(session_factory())
         registry.register_run(
             model_version_id=version_id,
             git_commit=git_commit,
-            data_version=f"data_v{datetime.utcnow().strftime('%Y-%m-%d')}",
+            data_version=f"data_v{datetime.now(timezone.utc).strftime('%Y-%m-%d')}",
             data_from="2018-01-01",
-            data_to=datetime.utcnow().strftime("%Y-%m-%d"),
+            data_to=datetime.now(timezone.utc).strftime("%Y-%m-%d"),
             candidates_evaluated={
                 r["algorithm"]: {
                     "rmse": r["rmse"],
@@ -201,7 +201,7 @@ def _run_training_job(
         )
 
         # Also save to legacy trained_models table
-        version_ts = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
+        version_ts = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
         db2 = session_factory()
         model_repo = TrainedModelRepositoryImpl(db2)
 
@@ -235,7 +235,7 @@ def _run_training_job(
         best = results[0] if results else None
         with _lock:
             _jobs[job_id]["status"] = JobStatus.COMPLETED
-            _jobs[job_id]["completed_at"] = datetime.utcnow().isoformat()
+            _jobs[job_id]["completed_at"] = datetime.now(timezone.utc).isoformat()
             _jobs[job_id]["result"] = {
                 "version": version_ts,
                 "semantic_version": new_version,
@@ -261,7 +261,7 @@ def _run_training_job(
         with _lock:
             _jobs[job_id]["status"] = JobStatus.FAILED
             _jobs[job_id]["error"] = str(exc)
-            _jobs[job_id]["completed_at"] = datetime.utcnow().isoformat()
+            _jobs[job_id]["completed_at"] = datetime.now(timezone.utc).isoformat()
 
 
 def _get_git_commit() -> str:
@@ -295,7 +295,7 @@ def submit_training_job(
             "id": job_id,
             "user_id": user_id,
             "status": JobStatus.PENDING,
-            "created_at": datetime.utcnow().isoformat(),
+            "created_at": datetime.now(timezone.utc).isoformat(),
             "started_at": None,
             "completed_at": None,
             "result": None,

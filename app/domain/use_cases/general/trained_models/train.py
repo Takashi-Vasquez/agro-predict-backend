@@ -4,7 +4,7 @@ Train Models Use Case with versioning support.
 import time
 import json
 import subprocess
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, Any, Optional, List
 
@@ -105,9 +105,9 @@ class TrainModelsUseCase:
         
         # Get version bump
         git_commit = self._get_git_commit()
-        data_version = f"data_v{datetime.utcnow().strftime('%Y-%m-%d')}"
+        data_version = f"data_v{datetime.now(timezone.utc).strftime('%Y-%m-%d')}"
         data_from = "2018-01-01"
-        data_to = datetime.utcnow().strftime("%Y-%m-%d")
+        data_to = datetime.now(timezone.utc).strftime("%Y-%m-%d")
         
         version_id = None
         new_version = None
@@ -154,7 +154,7 @@ class TrainModelsUseCase:
                             winner_algorithm=winner_name,
                             baseline_compared=baseline["version"] if baseline else None,
                             data_from="2018-01-01",
-                            data_to=datetime.utcnow().strftime("%Y-%m-%d"),
+                            data_to=datetime.now(timezone.utc).strftime("%Y-%m-%d"),
                             features=[
                                 "nitrogen", "phosphorus", "potassium", "temperature",
                                 "humidity", "ph_soil", "rainfall",
@@ -162,7 +162,7 @@ class TrainModelsUseCase:
                             ],
                             artifact_path=f"modelos/{new_version}/",
                             git_commit=self._get_git_commit(),
-                            data_version=f"data_v{datetime.utcnow().strftime('%Y-%m-%d')}"
+                            data_version=f"data_v{datetime.now(timezone.utc).strftime('%Y-%m-%d')}"
                         )
                         generated_version = True
             
@@ -178,9 +178,9 @@ class TrainModelsUseCase:
             self.registry.register_run(
                 model_version_id=version_id,
                 git_commit=self._get_git_commit() or "unknown",
-                data_version=f"data_v{datetime.utcnow().strftime('%Y-%m-%d')}",
+                data_version=f"data_v{datetime.now(timezone.utc).strftime('%Y-%m-%d')}",
                 data_from="2018-01-01",
-                data_to=datetime.utcnow().strftime("%Y-%m-%d"),
+                data_to=datetime.now(timezone.utc).strftime("%Y-%m-%d"),
                 candidates_evaluated={
                     r["algorithm"]: {
                         "rmse": r["rmse_score"],
@@ -197,7 +197,7 @@ class TrainModelsUseCase:
             )
         
         # Save models to database (existing logic)
-        version = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
+        version = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
         saved_models = []
         
         for i, result in enumerate(results):

@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -49,7 +49,7 @@ class CropRepositoryImpl(CropRepository):
     def delete(self, crop: Crop) -> None:
         orm = self.db.get(CropModel, crop.id)
         orm.status = "DELETED"
-        orm.deleted_at = datetime.utcnow()
+        orm.deleted_at = datetime.now(timezone.utc)
         self.db.commit()
 
     @staticmethod

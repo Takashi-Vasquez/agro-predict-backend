@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session, joinedload, selectinload
@@ -84,7 +84,7 @@ class UserRepositoryImpl(UserRepository):
     def delete(self, user: User) -> None:
         orm = self.db.get(UserModel, user.id)
         orm.status = "DELETED"
-        orm.deleted_at = datetime.utcnow()
+        orm.deleted_at = datetime.now(timezone.utc)
         self.db.commit()
 
     def _to_entity(self, orm) -> User:

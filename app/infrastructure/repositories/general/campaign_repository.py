@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 
 from sqlalchemy import and_, select
 from sqlalchemy.orm import Session
@@ -75,7 +75,7 @@ class CampaignRepositoryImpl(CampaignRepository):
     def delete(self, campaign: Campaign) -> None:
         orm = self.db.get(CampaignModel, campaign.id)
         orm.status = "DELETED"
-        orm.deleted_at = datetime.utcnow()
+        orm.deleted_at = datetime.now(timezone.utc)
         self.db.commit()
 
     def check_code_exists(self, code: str, exclude_id: int | None = None) -> bool:
